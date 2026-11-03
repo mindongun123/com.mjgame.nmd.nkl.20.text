@@ -4,6 +4,7 @@ using UnityEngine;
 namespace com.nmd.nkl.text
 {
     /// <summary>Characters jitter randomly. Loops, or stops after <see cref="duration"/>. Tag args: a (or =), r.</summary>
+    [ExecuteAlways]
     [AddComponentMenu("com.nmd.nkl/Text/Effects/Shake")]
     public sealed class ShakeEffect : TextEffect
     {

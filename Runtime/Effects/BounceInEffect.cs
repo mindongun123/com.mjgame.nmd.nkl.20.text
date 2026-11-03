@@ -4,9 +4,12 @@ using UnityEngine;
 namespace com.nmd.nkl.text
 {
     /// <summary>Characters pop in one after another with an overshoot. Plays once, then costs nothing.</summary>
+    [ExecuteAlways]
     [AddComponentMenu("com.nmd.nkl/Text/Effects/Bounce In")]
     public sealed class BounceInEffect : TextEffect
     {
+        public override string DefaultTag => "bounce";
+
         [Tooltip("Delay between two characters, in seconds.")]
         public float charDelay = 0.04f;
         [Tooltip("Animation length of one character, in seconds.")]

@@ -9,17 +9,22 @@ namespace com.nmd.nkl.text.tests
     public class TextComponentTests
     {
         GameObject _canvas;
+        bool _autoPreview;
 
         [SetUp]
         public void SetUp()
         {
             _canvas = new GameObject("TestCanvas", typeof(Canvas));
+            // Tests start effects themselves.
+            _autoPreview = TextEffect.AutoPreview;
+            TextEffect.AutoPreview = false;
         }
 
         [TearDown]
         public void TearDown()
         {
             Object.DestroyImmediate(_canvas);
+            TextEffect.AutoPreview = _autoPreview;
         }
 
         TextMeshProUGUI CreateText(string text)
@@ -72,11 +77,11 @@ namespace com.nmd.nkl.text.tests
             TextMeshProUGUI text = CreateText("");
             SetTag(text.gameObject.AddComponent<WaveEffect>(), "wave");
 
-            text.text = "<color=red>A</color> <pulse>B</pulse>";
+            text.text = "<color=red>A</color> <foo>B</foo>";
             text.ForceMeshUpdate(false, true);
 
-            // <color> is handled by TMP, <pulse> has no effect so it stays as plain text.
-            Assert.AreEqual("A <pulse>B</pulse>", text.GetParsedText());
+            // <color> is handled by TMP, <foo> is no package tag so it stays as plain text.
+            Assert.AreEqual("A <foo>B</foo>", text.GetParsedText());
             Assert.AreEqual(0, text.GetComponent<TextFX>().Spans.Count);
         }
 
@@ -520,6 +525,131 @@ namespace com.nmd.nkl.text.tests
             text.SetFraction(3, 10, "Lv ");
             text.ForceMeshUpdate();
             Assert.AreEqual("Lv 3/10", text.GetParsedText());
+        }
+
+        static float VertexY(TMP_Text text, int charIndex) =>
+            text.textInfo.meshInfo[0].vertices[text.textInfo.characterInfo[charIndex].vertexIndex].y;
+
+        [Test]
+        public void BuiltInTag_WorksWithoutAddingAnEffect()
+        {
+            TextMeshProUGUI text = CreateText("");
+            var fx = text.gameObject.AddComponent<TextFX>();
+            text.text = "A<wave>B</wave>";
+            text.ForceMeshUpdate(false, true);
+
+            Assert.AreEqual("AB", text.GetParsedText());
+            var wave = text.GetComponent<WaveEffect>();
+            Assert.IsNotNull(wave, "a hidden WaveEffect is created");
+            Assert.IsTrue(wave.IsAuto);
+            Assert.IsTrue((wave.hideFlags & HideFlags.DontSave) != 0, "never saved into the scene");
+
+            text.text = "<wave>A</wave><wave>B</wave>";
+            text.ForceMeshUpdate(false, true);
+            Assert.AreEqual(1, text.GetComponents<WaveEffect>().Length, "reused by later texts");
+        }
+
+        [Test]
+        public void BuiltInTag_Animates()
+        {
+            TextMeshProUGUI text = CreateText("");
+            var fx = text.gameObject.AddComponent<TextFX>();
+            text.text = "A<shake=20>B</shake>";
+            text.ForceMeshUpdate(false, true);
+            float yA = VertexY(text, 0), yB = VertexY(text, 1);
+            float xB = text.textInfo.meshInfo[0].vertices[text.textInfo.characterInfo[1].vertexIndex].x;
+
+            text.GetComponent<ShakeEffect>().Play();
+            fx.Tick(0.1f);
+
+            Assert.AreEqual(yA, VertexY(text, 0), 0.001f, "outside the tag");
+            float dx = text.textInfo.meshInfo[0].vertices[text.textInfo.characterInfo[1].vertexIndex].x - xB;
+            Assert.Greater(Mathf.Abs(dx) + Mathf.Abs(VertexY(text, 1) - yB), 0.01f);
+        }
+
+        [Test]
+        public void HandAddedEffect_OverridesBuiltInTag()
+        {
+            TextMeshProUGUI text = CreateText("");
+            var wave = text.gameObject.AddComponent<WaveEffect>();
+            SetTag(wave, "wave");
+            wave.amplitude = 0f; // this item: no movement
+            var fx = text.GetComponent<TextFX>();
+            text.text = "<wave>A</wave>";
+            text.ForceMeshUpdate(false, true);
+            float y = VertexY(text, 0);
+
+            Assert.AreEqual(1, text.GetComponents<WaveEffect>().Length, "no hidden copy for a tag the text already has");
+            wave.Play();
+            fx.Tick(0.3f);
+            Assert.AreEqual(y, VertexY(text, 0), 0.001f);
+        }
+
+        [Test]
+        public void PresetTag_ComesFromThePresetsPrefab()
+        {
+            TextMeshProUGUI text = CreateText("");
+            text.color = Color.white;
+            var fx = text.gameObject.AddComponent<TextFX>();
+            text.text = "A<gold>B</gold>";
+            text.ForceMeshUpdate(false, true);
+
+            var gold = text.GetComponent<GradientEffect>();
+            Assert.IsNotNull(gold, "<gold> is defined in Resources/" + TextFXPresets.ResourcePath);
+            Assert.AreEqual("gold", gold.TagName);
+            fx.Tick(0f); // static: applied once
+            Color32 a = VertexColor(text, 0, 0), b = VertexColor(text, 1, 0);
+            Assert.AreEqual(new Color32(255, 255, 255, 255), a);
+            Assert.AreNotEqual(a, b);
+        }
+
+        [Test]
+        public void TextFX_CanBeRemoved_AfterHiddenEffectsAreCleanedUp()
+        {
+            TextMeshProUGUI text = CreateText("");
+            var fx = text.gameObject.AddComponent<TextFX>();
+            text.text = "<wave>A</wave>";
+            text.ForceMeshUpdate(false, true);
+            Assert.IsTrue(text.GetComponent<WaveEffect>().IsAuto);
+
+            foreach (TextEffect effect in text.GetComponents<TextEffect>()) Object.DestroyImmediate(effect);
+            Object.DestroyImmediate(fx);
+            Assert.IsNull(text.GetComponent<TextFX>());
+        }
+
+        [Test]
+        public void AutoPreview_PlaysAnimatedEffects_InEditMode()
+        {
+            TextEffect.AutoPreview = true;
+            TextMeshProUGUI text = CreateText("Hi");
+            var wave = text.gameObject.AddComponent<WaveEffect>();
+            Assert.IsTrue(wave.IsPlaying);
+
+            TextEffect.AutoPreview = false;
+            var shake = text.gameObject.AddComponent<ShakeEffect>();
+            Assert.IsFalse(shake.IsPlaying);
+        }
+
+        [Test]
+        public void AnimatedEffect_LeavesUpdateLoop_WhenTextHasNoTag()
+        {
+            TextMeshProUGUI text = CreateText("");
+            var fx = text.gameObject.AddComponent<TextFX>();
+            text.text = "<wave>A</wave>";
+            text.ForceMeshUpdate(false, true);
+            text.GetComponent<WaveEffect>().Play();
+            fx.Tick(0f);
+            Assert.IsTrue(fx.IsInUpdateLoop);
+
+            text.text = "plain";
+            text.ForceMeshUpdate(false, true);
+            fx.Tick(0f);
+            Assert.IsFalse(fx.IsInUpdateLoop, "nothing to animate: no per-frame cost");
+
+            text.text = "<wave>again</wave>";
+            text.ForceMeshUpdate(false, true);
+            fx.OnTextChanged(text);
+            Assert.IsTrue(fx.IsInUpdateLoop);
         }
     }
 }

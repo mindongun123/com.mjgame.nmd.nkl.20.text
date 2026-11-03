@@ -16,9 +16,16 @@ namespace com.nmd.nkl.text
     /// <item>&lt;ev=shake&gt; or &lt;event=shake&gt;: raises <see cref="onEvent"/>("shake") when reached.</item>
     /// </list>
     /// </summary>
+    [ExecuteAlways]
     [AddComponentMenu("com.nmd.nkl/Text/Effects/Typewriter")]
     public sealed class TypewriterEffect : TextEffect
     {
+        // Reveals the whole text by default.
+        public override string DefaultTag => "";
+
+        // Its events may run game code: preview it with the Preview button only.
+        protected override bool PreviewsInEditMode => false;
+
         public float charactersPerSecond = 30f;
         [Tooltip("Fade length of each revealed character, in seconds; 0 = pop in.")]
         public float fadeDuration = 0.08f;

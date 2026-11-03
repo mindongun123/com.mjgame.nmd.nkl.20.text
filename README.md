@@ -56,7 +56,9 @@ title.GetComponent<BounceInEffect>().Play();                  // khi mở popup
 coins.GetComponent<TextCounter>().Add(250);                   // số chạy lên
 ```
 
-Trong Editor: chọn một text › **Add Component › com.nmd.nkl › Text › Effects › Wave**, rồi bấm **Preview** trên Inspector để xem ngay mà không cần Play.
+Trong Editor, cách nhanh nhất: gắn **Add Component › com.nmd.nkl › Text › Text FX** cho text, rồi viết tag có sẵn trong chuỗi, ví dụ `Nhận <wave>1000</wave> <gold>vàng</gold>` (xem [Tag dựng sẵn](#tag-dựng-sẵn)). Không cần thêm effect nào.
+
+Muốn effect áp cả text hoặc chỉnh riêng một item: **Add Component › com.nmd.nkl › Text › Effects › Wave**, rồi bấm **Preview** trên Inspector để xem ngay mà không cần Play.
 
 ---
 
@@ -128,7 +130,7 @@ Package chỉ thêm những **cấu hình riêng** mà TMP không có:
 | `TypewriterEffect` | Gõ từng chữ | Một lần | xem [Typewriter](#typewriter) |
 
 Trường chung:
-- `Tag`: để trống thì áp cho cả text; điền `wave` thì chỉ áp cho phần nằm trong `<wave>...</wave>`.
+- `Tag`: để trống thì áp cho cả text; có giá trị thì chỉ áp cho phần nằm trong `<tag>...</tag>`. Dòng gợi ý ngay dưới ô cho biết effect đang áp ở đâu. Effect thêm qua Inspector có sẵn tag theo tên (Wave → `wave`, Color Flash → `flash`, Bounce In → `bounce`...); riêng Typewriter mặc định áp cả text. Effect thêm bằng code (`AddComponent`) có Tag trống, tức là áp cả text.
 - `Play On Enable`: tự chạy khi object được bật (chỉ trong Play mode).
 
 Có thể gắn nhiều effect trên cùng một text, chúng chồng lên nhau (ví dụ Bounce In + Wave). Effect một lần tự dừng khi chạy xong; gọi `Play()` để chạy lại.
@@ -137,6 +139,29 @@ Có thể gắn nhiều effect trên cùng một text, chúng chồng lên nhau 
 
 ## Tag: effect cho một đoạn chữ
 
+### Tag dựng sẵn
+Text chỉ cần có `TextFX`. Các tag sau **chạy ngay mà không cần thêm effect**:
+
+| Tag | Effect |
+|---|---|
+| `<wave>` `<shake>` `<pulse>` `<wobble>` | chuyển động lặp |
+| `<bounce>` `<fade>` | xuất hiện một lần |
+| `<rainbow>` `<flash>` | màu |
+| `<gold>` `<fire>` `<ice>` `<toxic>` | gradient (từ prefab preset) |
+
+```
+<gold>HUYỀN THOẠI</gold> giảm <shake=3>50%</shake> · <wave a=12>Nhận ngay</wave>
+```
+
+**Thông số mặc định của cả game** nằm trong prefab `Runtime/Resources/NKL/TextFXPresets`. Mở prefab, chỉnh effect có Tag tương ứng (ví dụ Wave `wave` đổi `amplitude`), rồi lưu. Thêm tag mới cũng làm ở đây: add một effect và đặt Tag mới, ví dụ GradientEffect với Tag `vip` thì dùng được `<vip>`. Có thể thay prefab bằng `TextFXPresets.SetPresets(prefab)`, hoặc đăng ký từ code bằng `TextFXPresets.Register("tag", typeof(MyEffect))`.
+
+**Chỉnh riêng một item**: add effect vào text đó, giữ Tag trùng tên (`wave`) rồi sửa thông số. Effect gắn tay **thắng** tag dựng sẵn, chỉ trên text đó. Muốn chỉnh một đoạn nhỏ thì dùng [tham số trong tag](#tham-số-trong-tag): `<wave a=3>`.
+
+Cơ chế: lần đầu text gặp tag dựng sẵn, `TextFX` thêm một bản copy của effect, **ẩn và không lưu vào scene**, rồi dùng lại cho các lần đổi text sau. Text không có tag thì không tạo gì. Effect lặp mà text hiện tại không còn tag của nó thì rời vòng update, nên không tốn gì mỗi frame.
+
+> Effect một lần (`<bounce>`, `<fade>`) chạy khi được tạo và mỗi lần object bật lại. Muốn chạy lại theo ý thì add component và gọi `Play()`.
+
+### Tag của effect tự gắn
 Đặt `Tag` của effect, rồi dùng tag đó trong text:
 ```
 Nhận <wave><color=#FFD700>100</color></wave> <shake>vàng!</shake>

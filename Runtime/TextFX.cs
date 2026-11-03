@@ -91,7 +91,8 @@ namespace com.nmd.nkl.text
             get
             {
                 for (int i = 0; i < _effects.Count; i++)
-                    if (_effects[i] != null && _effects[i].IsPlaying && _effects[i].IsAnimated) return true;
+                    if (_effects[i] != null && _effects[i].IsPlaying && _effects[i].IsAnimated && _effects[i].HasTargets)
+                        return true;
                 return false;
             }
         }
@@ -153,6 +154,18 @@ namespace com.nmd.nkl.text
         }
 
         internal void Unregister(TextEffect effect) => _effects.Remove(effect);
+
+        /// <summary>True if an effect added by hand (not from <see cref="TextFXPresets"/>) uses this tag.</summary>
+        internal bool HasManualEffect(string tag)
+        {
+            for (int i = 0; i < _effects.Count; i++)
+            {
+                TextEffect effect = _effects[i];
+                if (effect != null && !effect.IsAuto && string.Equals(effect.TagName, tag, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
 
         /// <summary>
         /// Schedules a tick: called when an effect starts, stops or changes. The tick then decides
@@ -328,6 +341,12 @@ namespace com.nmd.nkl.text
             _modified = playing;
             if (!playing) Sleep();
             else if (!IsAnimating) LeaveUpdateLoop(); // static effects stay applied until the next rebuild
+            else if (!_inRunner)
+            {
+                // The rebuilt text has content for an animated effect again.
+                _inRunner = true;
+                TextFXRunner.Add(this);
+            }
             return playing;
         }
 
@@ -436,8 +455,41 @@ namespace com.nmd.nkl.text
             for (int s = 0; s < _openSpans.Count; s++)
                 _spans[_openSpans[s]] = _spans[_openSpans[s]].WithEnd(_builder.Length);
             _openSpans.Clear();
+#if UNITY_EDITOR
+            ScheduleUnusedAutoCleanup();
+#endif
             return changed ? _builder.ToString() : text;
         }
+
+#if UNITY_EDITOR
+        bool _cleanupScheduled;
+
+        // Edit mode only: drop built-in tag effects the text no longer uses, so they do not linger on
+        // objects (and do not block removing TextFX). At runtime they are kept for reuse (pooled items).
+        void ScheduleUnusedAutoCleanup()
+        {
+            if (Application.isPlaying || _cleanupScheduled) return;
+            _cleanupScheduled = true;
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                _cleanupScheduled = false;
+                if (this == null || Application.isPlaying) return;
+                GetComponents(_scratch);
+                for (int i = 0; i < _scratch.Count; i++)
+                {
+                    TextEffect effect = _scratch[i];
+                    if (effect.IsAuto && !UsesTag(effect.TagName)) DestroyImmediate(effect);
+                }
+            };
+        }
+
+        bool UsesTag(string tag)
+        {
+            for (int i = 0; i < _spans.Count; i++)
+                if (!_spans[i].IsPoint && string.Equals(_spans[i].Name, tag, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+#endif
 
         void CloseSpan(string name, int position)
         {
@@ -478,7 +530,23 @@ namespace com.nmd.nkl.text
                 name = text.Substring(start, length).ToLowerInvariant();
                 return TagKind.Point;
             }
+
+            if (TextFXPresets.TryFind(text, start, length, out TextFXPresets.Entry entry))
+            {
+                _scratch.Add(CreateAutoEffect(entry));
+                name = entry.Name;
+                return TagKind.Range;
+            }
             return TagKind.None;
+        }
+
+        /// <summary>Hidden, unsaved effect for a built-in tag; kept so later texts reuse it.</summary>
+        TextEffect CreateAutoEffect(in TextFXPresets.Entry entry)
+        {
+            var effect = (TextEffect)gameObject.AddComponent(entry.Type);
+            if (entry.Template != null) JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(entry.Template), effect);
+            effect.MakeAuto(entry.Name);
+            return effect;
         }
 
         sealed class Follower

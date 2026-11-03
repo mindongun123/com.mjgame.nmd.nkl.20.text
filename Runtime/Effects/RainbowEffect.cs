@@ -7,6 +7,7 @@ namespace com.nmd.nkl.text
     /// Characters cycle through the hue wheel (HSV, per character). For custom colors, direction,
     /// smooth per-vertex blending or presets use <see cref="GradientEffect"/>.
     /// </summary>
+    [ExecuteAlways]
     [AddComponentMenu("com.nmd.nkl/Text/Effects/Rainbow")]
     public sealed class RainbowEffect : TextEffect
     {

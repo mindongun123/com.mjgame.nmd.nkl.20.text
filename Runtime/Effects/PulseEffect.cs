@@ -4,6 +4,7 @@ using UnityEngine;
 namespace com.nmd.nkl.text
 {
     /// <summary>Characters grow and shrink rhythmically. Loops forever. Tag args: a (or =), s, d.</summary>
+    [ExecuteAlways]
     [AddComponentMenu("com.nmd.nkl/Text/Effects/Pulse")]
     public sealed class PulseEffect : TextEffect
     {

@@ -4,9 +4,12 @@ using UnityEngine;
 namespace com.nmd.nkl.text
 {
     /// <summary>Characters fade in one after another, optionally sliding in. Plays once.</summary>
+    [ExecuteAlways]
     [AddComponentMenu("com.nmd.nkl/Text/Effects/Fade In")]
     public sealed class FadeInEffect : TextEffect
     {
+        public override string DefaultTag => "fade";
+
         [Tooltip("Delay between two characters, in seconds.")]
         public float charDelay = 0.03f;
         [Tooltip("Fade length of one character, in seconds.")]

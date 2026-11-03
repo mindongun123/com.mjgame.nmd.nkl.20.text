@@ -21,6 +21,8 @@ namespace com.nmd.nkl.text.editor
             {
                 switch (it.name)
                 {
+                    case TagProperty:
+                        break;
                     case "m_Script":
                         using (new EditorGUI.DisabledScope(true)) EditorGUILayout.PropertyField(it);
                         break;

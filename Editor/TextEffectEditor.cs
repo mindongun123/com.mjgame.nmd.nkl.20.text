@@ -8,11 +8,24 @@ namespace com.nmd.nkl.text.editor
     [CanEditMultipleObjects]
     class TextEffectEditor : UnityEditor.Editor
     {
-        /// <summary>Draws the effect's own fields; override for a custom layout.</summary>
-        protected virtual void DrawFields() => DrawDefaultInspector();
+        protected const string TagProperty = "_tag";
+
+        /// <summary>Draws the effect's own fields (the tag is drawn above them); override for a custom layout.</summary>
+        protected virtual void DrawFields()
+        {
+            serializedObject.Update();
+            SerializedProperty it = serializedObject.GetIterator();
+            for (bool enter = true; it.NextVisible(enter); enter = false)
+            {
+                if (it.name == TagProperty) continue;
+                using (new EditorGUI.DisabledScope(it.name == "m_Script")) EditorGUILayout.PropertyField(it, true);
+            }
+            serializedObject.ApplyModifiedProperties();
+        }
 
         public override void OnInspectorGUI()
         {
+            DrawTag();
             DrawFields();
             EditorGUILayout.Space();
 
@@ -34,6 +47,25 @@ namespace com.nmd.nkl.text.editor
                 EditorGUILayout.LabelField("State", state);
                 if (effect.IsPlaying) Repaint();
             }
+        }
+
+        static readonly GUIContent TagLabel = new GUIContent("Tag",
+            "Empty = whole text. Otherwise text inside <tag>...</tag> gets this effect. Using a built-in tag name " +
+            "(wave, shake, gold...) overrides that tag for this text only.");
+
+        void DrawTag()
+        {
+            serializedObject.Update();
+            SerializedProperty tag = serializedObject.FindProperty(TagProperty);
+            EditorGUILayout.PropertyField(tag, TagLabel);
+            if (!tag.hasMultipleDifferentValues)
+            {
+                string hint = string.IsNullOrEmpty(tag.stringValue)
+                    ? "Applies to the whole text."
+                    : $"Applies to <{tag.stringValue}>...</{tag.stringValue}> in the text.";
+                EditorGUILayout.HelpBox(hint, MessageType.None);
+            }
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }

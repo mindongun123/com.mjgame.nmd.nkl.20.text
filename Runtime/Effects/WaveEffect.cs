@@ -4,6 +4,7 @@ using UnityEngine;
 namespace com.nmd.nkl.text
 {
     /// <summary>Characters float up and down in a sine wave. Loops forever. Tag args: a (or =), s, d.</summary>
+    [ExecuteAlways]
     [AddComponentMenu("com.nmd.nkl/Text/Effects/Wave")]
     public sealed class WaveEffect : TextEffect
     {

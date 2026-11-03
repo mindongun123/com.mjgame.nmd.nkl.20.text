@@ -14,7 +14,8 @@ namespace com.nmd.nkl.text
     [RequireComponent(typeof(TextFX))]
     public abstract class TextEffect : MonoBehaviour
     {
-        [Tooltip("Empty = whole text. Otherwise only text inside <tag>...</tag>, e.g. \"wave\" for <wave>Hi</wave>.")]
+        [Tooltip("Empty = whole text. Otherwise only text inside <tag>...</tag>, e.g. \"wave\" for <wave>Hi</wave>. " +
+                 "Using the name of a built-in tag overrides it for this text only.")]
         [SerializeField] string _tag = "";
         [SerializeField] bool _playOnEnable = true;
 
@@ -27,6 +28,19 @@ namespace com.nmd.nkl.text
         int _affectedCount;
 
         public string TagName => _tag;
+        public bool PlayOnEnable => _playOnEnable;
+
+        /// <summary>Tag filled in when the effect is added in the inspector; empty = whole text.</summary>
+        public virtual string DefaultTag => EffectKey;
+
+        /// <summary>True for the hidden effects TextFX creates for built-in tags (<see cref="TextFXPresets"/>).</summary>
+        // The flag also counts so it survives domain reloads (hidden components outlive them in edit mode).
+        public bool IsAuto => _auto || (hideFlags & HideFlags.DontSave) != 0;
+
+        [System.NonSerialized] bool _auto;
+
+        /// <summary>False when the text has none of this effect's tags: an animated effect then costs nothing.</summary>
+        internal bool HasTargets => _textVersion < 0 || string.IsNullOrEmpty(_tag) || _ranges.Count > 0;
         public bool IsPlaying => _playing && isActiveAndEnabled;
 
         /// <summary>True for effects that never end on their own (they keep the canvas rebatching).</summary>
@@ -54,7 +68,7 @@ namespace com.nmd.nkl.text
         protected virtual void OnEnable()
         {
             Fx.Register(this);
-            if (_playOnEnable && (Application.isPlaying || !IsAnimated)) Play();
+            if (_playOnEnable && (Application.isPlaying || !IsAnimated || AutoPreviews)) Play();
         }
 
         protected virtual void OnDisable()
@@ -74,11 +88,59 @@ namespace com.nmd.nkl.text
                 if (this == null || Fx == null) return;
                 Fx.Reparse();
                 // Static effects in edit mode start/refresh here so inspector changes show immediately.
-                if (isActiveAndEnabled && _playOnEnable && !Application.isPlaying && !IsAnimated && !_playing) Play();
+                if (isActiveAndEnabled && _playOnEnable && !Application.isPlaying && (!IsAnimated || AutoPreviews) && !_playing) Play();
                 if (_playing) Fx.Wake();
             };
         }
 #endif
+
+        internal void MakeAuto(string tag)
+        {
+            _tag = tag;
+            _auto = true;
+            hideFlags = HideFlags.HideAndDontSave;
+#if UNITY_EDITOR
+            // Undo.AddComponent / ObjectFactory (adding TextFX in the inspector) reset the hide flags of
+            // components created during the call: hide it again once the call has finished.
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                if (this != null) hideFlags = HideFlags.HideAndDontSave;
+            };
+#endif
+            _textVersion = -1;
+            if (!_playOnEnable) Stop();
+        }
+
+        const string AutoPreviewPref = "com.nmd.nkl.text.AutoPreview";
+        static int _autoPreview = -1;
+
+        /// <summary>
+        /// Edit mode only: effects with Play On Enable also play outside Play mode, so the scene and prefab
+        /// views show them animated. Toggle in Tools › com.nmd.nkl › Text › Auto Preview (on by default).
+        /// </summary>
+        public static bool AutoPreview
+        {
+#if UNITY_EDITOR
+            get
+            {
+                if (_autoPreview < 0) _autoPreview = UnityEditor.EditorPrefs.GetBool(AutoPreviewPref, true) ? 1 : 0;
+                return _autoPreview == 1;
+            }
+            set
+            {
+                _autoPreview = value ? 1 : 0;
+                UnityEditor.EditorPrefs.SetBool(AutoPreviewPref, value);
+            }
+#else
+            get => false;
+            set { }
+#endif
+        }
+
+        /// <summary>False for effects that must not start by themselves in edit mode (e.g. they raise events).</summary>
+        protected virtual bool PreviewsInEditMode => true;
+
+        bool AutoPreviews => AutoPreview && PreviewsInEditMode;
 
         public void Play()
         {
@@ -158,7 +220,7 @@ namespace com.nmd.nkl.text
             {
                 if (count > 0) AddRange(0, count, TagArgs.Empty);
             }
-            else
+            else if (!IsAuto || !Fx.HasManualEffect(_tag)) // a hand-added effect with the same tag wins
             {
                 for (int i = 0; i < spans.Count; i++)
                 {

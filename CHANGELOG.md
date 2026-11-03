@@ -6,6 +6,12 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 ## [Unreleased]
 
 ### Added
+- **Tag dựng sẵn**: `<wave>`, `<shake>`, `<pulse>`, `<wobble>`, `<rainbow>`, `<flash>`, `<bounce>`, `<fade>`, `<gold>`, `<fire>`, `<ice>`, `<toxic>` chạy được trên mọi text có `TextFX`, không cần thêm effect. `TextFX` tự thêm một effect ẩn và không lưu vào scene cho mỗi tag được dùng.
+- **Prefab preset** `Runtime/Resources/NKL/TextFXPresets`: thông số mặc định của tag dựng sẵn cho cả game, và nơi thêm tag mới. API `TextFXPresets.Register()`, `SetPresets()`, `Reload()`. Lưu prefab trong Editor thì tự nạp lại.
+- Effect gắn tay có cùng Tag với tag dựng sẵn sẽ thắng trên text đó, dùng để chỉnh riêng một item. Thêm `TextEffect.IsAuto` và `DefaultTag`.
+- Inspector của `TextFX` có các nút **Add Wave / Add Shake / ... / Add Gradient / Add Typewriter**: thêm effect đã điền sẵn tag (`wave`...), ghi đè tag dựng sẵn trên text đó. Thêm tag dựng sẵn `<gradient>`.
+- **Auto Preview** (bật mặc định): effect có Play On Enable tự chạy trong Edit mode, kể cả effect của tag dựng sẵn, nên Scene/Game view hiện luôn animation. Bật/tắt ở **Tools › com.nmd.nkl › Text › Auto Preview**. Typewriter không tự chạy vì event của nó có thể gọi code game; dùng nút Preview. Mọi effect giờ là `[ExecuteAlways]`.
+- Inspector: dưới ô Tag có dòng gợi ý effect áp ở đâu (cả text, hoặc `<wave>...</wave>`). Effect thêm qua Inspector tự điền Tag theo tên (`wave`, `flash`, `bounce`...); Typewriter mặc định áp cả text.
 - **Tag lồng nhau và có tham số**: `<wave a=10 s=2>`, `<shake=5>`; đọc qua `TextEffect.GetRangeArgs()` / `TagArgs`.
 - **`<nofx>`** loại một đoạn khỏi mọi effect; `<nofx=gradient,wave>` chỉ loại các effect được liệt kê (`TextEffect.EffectKey` hoặc `Tag`).
 - **Icon**: sprite TMP (`<sprite>`) được xử lý như chữ; bọc trong `<nofx>` để giữ màu gốc. Thêm `TextEffect.IsSprite()` cho effect tự viết.
@@ -19,6 +25,9 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 - `TextFX.IsInUpdateLoop`.
 
 ### Fixed
+- Effect ẩn của tag dựng sẵn bị hiện ra và bị lưu vào scene khi gắn `TextFX` qua Inspector cho text đã có tag (`Undo.AddComponent` reset `hideFlags`).
+- Không gỡ được `TextFX` khi còn effect ẩn của tag dựng sẵn. Đã thêm nút **Remove Text FX and its effects** trên Inspector (có trong cả menu ⋮), và trong Edit mode effect ẩn tự bị xóa khi text không còn dùng tag đó.
+- Effect lặp có Tag mà text hiện tại không có tag đó thì rời vòng update; nó vào lại khi text có tag.
 - Lỗi `IndexOutOfRangeException` / "Mesh.vertices is too small" khi mở scene hoặc reload script trong Edit mode: runner không tick nữa khi TMP đang chờ dựng lại (`havePropertiesChanged`), và tự phát hiện mesh đã được dựng lại mà không có event (số ký tự đổi hoặc buffer vertex bị cấp phát lại).
 - Effect bỏ qua ký tự không còn được mesh hiện tại hỗ trợ (`TextEffect.IsDrawable`).
 - Sample: 6 mẫu gradient và 5 preset (`Sample/Gradients`: Fire, Ice, Gold, Rainbow, Toxic).
