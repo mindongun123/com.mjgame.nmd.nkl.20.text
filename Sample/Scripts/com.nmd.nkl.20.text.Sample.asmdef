@@ -1,0 +1,18 @@
+{
+    "name": "com.nmd.nkl.20.text.Sample",
+    "rootNamespace": "com.nmd.nkl.text.sample",
+    "references": [
+        "com.nmd.nkl.20.text",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
