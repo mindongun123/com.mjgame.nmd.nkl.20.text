@@ -35,8 +35,9 @@ namespace com.mjgame.nmd.nkl
                 TagArgs args = GetRangeArgs(r);
                 float delay = args.GetFloat("d", charDelay);
                 float length = args.GetFloat("t", charDuration);
-                float height = args.GetFloat("h", "", rise) * UnitScale;
-                float back = args.GetFloat("o", overshoot);
+                float motion = MotionScale;
+                float height = args.GetFloat("h", "", rise) * UnitScale * motion;
+                float back = args.GetFloat("o", overshoot) * motion;
                 for (int c = range.x; c < range.y; c++)
                 {
                     bool counts = !skipSpaces || info.characterInfo[c].isVisible;
@@ -45,7 +46,7 @@ namespace com.mjgame.nmd.nkl
                     end = Mathf.Max(end, start + length);
                     if (!IsDrawable(info, c)) continue;
                     float t = length > 0f ? Mathf.Clamp01((Time - start) / length) : 1f;
-                    Scale(info, c, EaseOutBack(t, back));
+                    Scale(info, c, Mathf.LerpUnclamped(1f, EaseOutBack(t, back), motion));
                     Offset(info, c, new Vector3(0f, (t - 1f) * height, 0f));
                     MultiplyAlpha(info, c, Mathf.Clamp01(t * 3f));
                 }

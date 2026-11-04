@@ -26,7 +26,7 @@ namespace com.mjgame.nmd.nkl
                 Vector2Int range = GetRange(r);
                 // <wobble=20> or <wobble a=20 s=4 d=1>
                 TagArgs args = GetRangeArgs(r);
-                float ang = args.GetFloat("a", "", angle);
+                float ang = args.GetFloat("a", "", angle) * MotionScale;
                 float spd = args.GetFloat("s", speed);
                 float dens = args.GetFloat("d", spacing);
                 for (int c = range.x; c < range.y; c++, n++)

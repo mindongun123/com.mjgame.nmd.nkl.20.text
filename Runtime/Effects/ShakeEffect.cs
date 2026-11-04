@@ -31,7 +31,7 @@ namespace com.mjgame.nmd.nkl
                 Vector2Int range = GetRange(r);
                 // <shake=5> or <shake a=5 r=30>
                 TagArgs args = GetRangeArgs(r);
-                float amp = args.GetFloat("a", "", amplitude) * calm * UnitScale;
+                float amp = args.GetFloat("a", "", amplitude) * calm * UnitScale * MotionScale;
                 int step = (int)(Time * args.GetFloat("r", rate));
                 for (int c = range.x; c < range.y; c++, n++)
                 {

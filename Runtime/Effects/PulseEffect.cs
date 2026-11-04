@@ -26,7 +26,7 @@ namespace com.mjgame.nmd.nkl
                 Vector2Int range = GetRange(r);
                 // <pulse=0.3> or <pulse a=0.3 s=8 d=0>
                 TagArgs args = GetRangeArgs(r);
-                float amt = args.GetFloat("a", "", amount);
+                float amt = args.GetFloat("a", "", amount) * MotionScale;
                 float spd = args.GetFloat("s", speed);
                 float dens = args.GetFloat("d", spacing);
                 for (int c = range.x; c < range.y; c++, n++)

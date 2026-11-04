@@ -58,6 +58,11 @@ namespace com.mjgame.nmd.nkl.editor
             EditorGUILayout.LabelField("Distance scale", EditorStyles.boldLabel);
             Field("uiUnitScale", "UI ×", "Multiplier of wave amplitude, bounce rise, shake, fade slide on UI texts.");
             Field("worldUnitScale", "World ×", "TMP builds world text 10x smaller than UI text: 0.1 makes the same settings look alike.");
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Motion", EditorStyles.boldLabel);
+            Field("motionScale", "Motion strength", "1 = full, 0 = no movement (wave, shake, wobble, pulse, bounce/fade movement). Colors still play. Players can override it with TextFXSettings.SetPlayerMotionScale().");
+            Field("qualityOverrides", "Per quality level", "Motion strength and max updates/s for chosen quality levels (Project Settings > Quality). Other levels use the values above.");
             _so.ApplyModifiedProperties();
 
             EditorGUILayout.Space();

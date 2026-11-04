@@ -15,4 +15,7 @@ MonoBehaviour:
   uiUseTimeScale: 0
   worldUseTimeScale: 1
   uiUnitScale: 1
-  worldUnitScale: 0.1
+  worldUnitScale: 0.02
+  maxUpdatesPerSecond: 0
+  motionScale: 1
+  qualityOverrides: []

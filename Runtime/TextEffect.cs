@@ -75,6 +75,12 @@ namespace com.mjgame.nmd.nkl
         /// </summary>
         protected float UnitScale => TextFXSettings.Instance.UnitScale(Fx.Text);
 
+        /// <summary>
+        /// Multiply movement (offsets, rotations, extra scale) by this: 1 = full, 0 = reduced motion
+        /// (<see cref="TextFXSettings.MotionScale"/>). Colors and alpha are not affected.
+        /// </summary>
+        protected static float MotionScale => TextFXSettings.Instance.MotionScale;
+
         /// <summary>Total number of affected characters (visible or not).</summary>
         protected int AffectedCount => _affectedCount;
 

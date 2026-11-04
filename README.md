@@ -7,6 +7,7 @@ Package không thay thế TMP mà chạy bên trên nó, nên vẫn giữ đư�
 - Namespace: `com.mjgame.nmd.nkl`
 - Menu: **Add Component › com.mjgame.nmd.nkl › Text**, **GameObject › com.mjgame.nmd.nkl › Text**
 - Settings: **Tools › com.mjgame.nmd.nkl › Text › Settings...**
+- Thư viện effect (xem trước mọi tag, copy chuỗi mẫu): **Tools › com.mjgame.nmd.nkl › Text › Effect Gallery...**
 - Lịch sử thay đổi: [CHANGELOG.md](CHANGELOG.md)
 
 ---
@@ -129,6 +130,7 @@ Package chỉ thêm những **cấu hình riêng** mà TMP không có:
 | `ColorFlashEffect` | Nhấp nháy về một màu | Một lần, hoặc lặp khi `duration = 0` | `color`, `strength`, `rate`, `duration`, `charDelay`, `skipSpaces` |
 | `BounceInEffect` | Chữ nảy vào lần lượt | Một lần | `charDelay`, `charDuration`, `overshoot`, `rise`, `skipSpaces` |
 | `FadeInEffect` | Chữ hiện mờ dần và trượt vào | Một lần | `charDelay`, `charDuration`, `slide`, `skipSpaces` |
+| `ShineEffect` | Vệt sáng quét ngang chữ (kiểu nút "Claim"). Chỉ đổi màu vertex: không tạo material, vẫn batch | Lặp có nghỉ, hoặc một lần khi tắt `loop` | `color`, `intensity`, `width`, `duration`, `interval`, `slant` |
 | `TypewriterEffect` | Gõ từng chữ | Một lần | xem [Typewriter](#typewriter) |
 
 Trường chung:
@@ -147,6 +149,10 @@ Mở **Tools › com.mjgame.nmd.nkl › Text › Settings...** Cửa sổ này c
 | World uses Time.timeScale | Bật | Text 3D (`TextMeshPro` trên object) dừng khi pause game |
 | UI × / World × | 1 / 0.1 | Hệ số nhân cho khoảng cách: biên độ Wave/Shake, `rise` của Bounce, `slide` của Fade |
 | Max updates / second | 0 | Số lần cập nhật effect tối đa mỗi giây khi Play. 0 = mỗi frame. Đặt 30 cho mobile để giảm khoảng một nửa CPU của effect lặp; tốc độ animation không đổi |
+| Motion strength | 1 | Độ mạnh của chuyển động: biên độ Wave/Shake, góc Wobble, mức phóng Pulse, độ nảy của Bounce, khoảng trượt của Fade. 0 = không chuyển động (màu và độ mờ vẫn chạy) |
+| Per quality level | trống | Ghi đè Motion strength và Max updates / second cho từng mức trong **Project Settings › Quality**, ví dụ mức Low: motion 0.5, 30 lần/giây |
+
+**Giảm chuyển động cho người chơi**: gắn với tuỳ chọn trong menu game, ví dụ `TextFXSettings.SetPlayerMotionScale(reduceMotion ? 0f : -1f)`. Giá trị này thắng cả asset lẫn mức chất lượng; truyền số âm để bỏ. Package không tự lưu, game tự lưu lựa chọn của người chơi (PlayerPrefs...) và gọi lại khi khởi động.
 
 Nút **Reset to Defaults** ở cuối cửa sổ đưa mọi setting về giá trị mặc định trong bảng trên.
 
@@ -163,7 +169,7 @@ Text chỉ cần có `TextFX`. Các tag sau **chạy ngay mà không cần thêm
 |---|---|
 | `<wave>` `<shake>` `<pulse>` `<wobble>` | chuyển động lặp |
 | `<bounce>` `<fade>` | xuất hiện một lần |
-| `<rainbow>` `<flash>` | màu |
+| `<rainbow>` `<flash>` `<shine>` | màu, vệt sáng |
 | `<gold>` `<fire>` `<ice>` `<toxic>` | gradient (từ prefab preset) |
 
 ```
@@ -184,6 +190,7 @@ Cơ chế: lần đầu text gặp tag dựng sẵn, `TextFX` thêm một bản 
 Nhận <wave><color=#FFD700>100</color></wave> <shake>vàng!</shake>
 ```
 - Tag không phân biệt hoa thường. Tag không khớp với effect nào thì được giữ nguyên để TMP tự xử lý.
+- **Gõ sai tag**: TMP sẽ in nguyên `<wavee>` ra màn hình. Inspector của `TextFX` cảnh báo tag lạ và gợi ý tên gần đúng ("did you mean `<wave>`?"); tag của typewriter (`<p>`, `<speed>`...) bị báo nếu text không có `TypewriterEffect`.
 - **Lồng được**: `<wave>Nhận <shake>100</shake> vàng</wave>`, và dùng chung được với `<link>`, `<color>`, `<sprite>` của TMP.
 - Tag vẫn hoạt động với chuỗi đã dịch, vì nó nằm ngay trong chuỗi localize.
 - Về cơ chế: `TextFX` là preprocessor của text. Nó gỡ tag của package ra khỏi chuỗi và ghi lại vị trí (`TextFX.Spans`), không dùng `<link>` của TMP.
@@ -203,6 +210,7 @@ Mỗi đoạn có thể có tham số riêng, ghi đè giá trị trên componen
 | Flash | `c` màu (`red`, `#ff0000`) | `r` số lần/giây, `d` độ trễ giữa các chữ, `a` độ mạnh |
 | Bounce | `h` độ cao nảy | `d` độ trễ, `t` thời gian mỗi chữ, `o` độ vọt |
 | Fade | `d` độ trễ | `t` thời gian mỗi chữ, `x`, `y` khoảng trượt |
+| Shine | `c` màu vệt sáng | `w` độ rộng (theo bề ngang đoạn chữ), `t` thời gian một lần quét, `i` thời gian nghỉ, `a` độ sáng |
 
 Gradient không nhận tham số trong tag (khung bao và chế độ tĩnh tính trên cả đoạn): muốn màu khác thì dùng tag preset như `<gold>`, `<fire>`, hoặc thêm preset mới trong `TextFXPresets`.
 
@@ -432,6 +440,7 @@ public sealed class SwingEffect : TextEffect
 Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gốc.
 - Helper: `Offset`, `Scale`, `Rotate`, `MultiplyAlpha`, `TintColor`, `CharacterIndexAt`, `Time`, `AffectedCount`.
 - Khoảng cách nhân với `UnitScale` để chạy đúng trên cả text UI và text 3D: `Offset(info, c, Vector3.up * height * UnitScale)`.
+- Chuyển động (khoảng cách, góc, mức phóng) nhân thêm `MotionScale` để tôn trọng tuỳ chọn giảm chuyển động.
 - Hook: `OnPlay()`, `OnTextRebuilt()`.
 - Effect chỉ sửa vị trí hoặc chỉ sửa màu thì override `Modifies` (ví dụ `=> TMP_VertexDataUpdateFlags.Vertices`) để giảm dữ liệu gửi lên mỗi frame. Không override thì mặc định là cả hai.
 
@@ -443,7 +452,7 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 
 **`TextEffect`**: `Play()`, `Stop()`, `IsPlaying`, `IsLooping`, `IsAnimated`, `Modifies`, `TagName`, `AutoPreview`; cho effect tự viết: `UnitScale`, `GetRangeArgs()`
 
-**`TextFXSettings`**: `Instance`, `Set()`, `IsWorld()`, `UsesTimeScale()`, `UnitScale()`
+**`TextFXSettings`**: `Instance`, `Set()`, `IsWorld()`, `UsesTimeScale()`, `UnitScale()`, `MotionScale`, `MaxUpdatesPerSecond`, `SetPlayerMotionScale()`
 
 **`TextFXPresets`**: `Register()`, `SetPresets()`, `Reload()`, `Prewarm()`
 
@@ -485,7 +494,7 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 - `TMPTextExtensions` dùng buffer tĩnh: chỉ gọi trên main thread (giống TMP).
 - Text rất dài với effect lặp vẫn tốn CPU theo số ký tự.
 - Mọi text không phải `TextMeshProUGUI` đều được coi là text 3D (hệ số và timeScale của World).
-- Text 3D ngoài tầm camera vẫn chạy effect nếu effect đang chạy; nên dừng effect khi object bị ẩn hoặc trả về pool.
+- Text đang khuất chỉ được bỏ qua khi nó chỉ chạy effect lặp (xem `CullHiddenTexts`). Effect chạy một lần vẫn chạy cho xong; text nằm dưới `Mask` (stencil) không được coi là khuất. Nên dừng effect khi object trả về pool.
 - `GradientEffect` không nhận tham số trong tag; dùng tag preset (`<gold>`...) thay thế.
 
 ---

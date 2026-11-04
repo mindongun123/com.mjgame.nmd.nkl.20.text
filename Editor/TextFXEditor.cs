@@ -16,6 +16,7 @@ namespace com.mjgame.nmd.nkl.editor
         {
             var fx = (TextFX)target;
             TextEffect[] effects = fx.GetComponents<TextEffect>();
+            DrawTagWarnings(fx);
 
             if (effects.Length == 0)
             {
@@ -50,7 +51,7 @@ namespace com.mjgame.nmd.nkl.editor
         {
             ("Wave", typeof(WaveEffect)), ("Shake", typeof(ShakeEffect)), ("Pulse", typeof(PulseEffect)),
             ("Wobble", typeof(WobbleEffect)), ("Rainbow", typeof(RainbowEffect)), ("Flash", typeof(ColorFlashEffect)),
-            ("Bounce", typeof(BounceInEffect)), ("Fade", typeof(FadeInEffect)), ("Gradient", typeof(GradientEffect)),
+            ("Bounce", typeof(BounceInEffect)), ("Fade", typeof(FadeInEffect)), ("Gradient", typeof(GradientEffect)), ("Shine", typeof(ShineEffect)),
             ("Typewriter", typeof(TypewriterEffect)),
         };
 
@@ -118,6 +119,21 @@ namespace com.mjgame.nmd.nkl.editor
             }
             Undo.DestroyObjectImmediate(fx);
             Undo.CollapseUndoOperations(group);
+        }
+
+        static void DrawTagWarnings(TextFX fx)
+        {
+            if (fx.Text == null) return;
+            var issues = TextTagValidator.Find(fx.Text.text, fx.gameObject);
+            if (issues.Count == 0) return;
+            var message = new System.Text.StringBuilder("Unknown tags, TMP will print them as text:");
+            foreach (var issue in issues)
+            {
+                message.Append("\n  ").Append(issue.Tag);
+                if (issue.Hint != null) message.Append("  (").Append(issue.Hint).Append(")");
+            }
+            EditorGUILayout.HelpBox(message.ToString(), MessageType.Warning);
+            EditorGUILayout.Space();
         }
 
         static void DrawCanvasWarning(TextFX fx, TextEffect[] effects)

@@ -6,7 +6,7 @@ namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Built-in tags that work in any text with a <see cref="TextFX"/>, without adding an effect component:
-    /// &lt;wave&gt;, &lt;shake&gt;, &lt;pulse&gt;, &lt;wobble&gt;, &lt;rainbow&gt;, &lt;flash&gt;, &lt;bounce&gt;, &lt;fade&gt;, &lt;gradient&gt;,
+    /// &lt;wave&gt;, &lt;shake&gt;, &lt;pulse&gt;, &lt;wobble&gt;, &lt;rainbow&gt;, &lt;flash&gt;, &lt;bounce&gt;, &lt;fade&gt;, &lt;gradient&gt;, &lt;shine&gt;,
     /// plus every effect of the presets prefab (<see cref="ResourcePath"/>), which can also define new tags
     /// such as &lt;gold&gt; (a GradientEffect with Tag "gold").
     /// <para>
@@ -98,6 +98,24 @@ namespace com.mjgame.nmd.nkl
             return false;
         }
 
+        /// <summary>All built-in tags (built-in effects, presets prefab, registered ones).</summary>
+        internal static IReadOnlyList<Entry> All
+        {
+            get
+            {
+                EnsureLoaded();
+                return Entries;
+            }
+        }
+
+        internal static bool Contains(string tag)
+        {
+            EnsureLoaded();
+            for (int i = 0; i < Entries.Count; i++)
+                if (string.Equals(Entries[i].Name, tag, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
         static void EnsureLoaded()
         {
             if (_loaded) return;
@@ -112,6 +130,7 @@ namespace com.mjgame.nmd.nkl
             Add(new Entry("bounce", typeof(BounceInEffect), null));
             Add(new Entry("fade", typeof(FadeInEffect), null));
             Add(new Entry("gradient", typeof(GradientEffect), null));
+            Add(new Entry("shine", typeof(ShineEffect), null));
 
             GameObject prefab = _prefab != null ? _prefab : Resources.Load<GameObject>(ResourcePath);
             if (prefab == null) return;

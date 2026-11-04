@@ -27,7 +27,7 @@ namespace com.mjgame.nmd.nkl
                 Vector2Int range = GetRange(r);
                 // <wave=10> or <wave a=10 s=2 d=0.3>
                 TagArgs args = GetRangeArgs(r);
-                float amp = args.GetFloat("a", "", amplitude) * unit;
+                float amp = args.GetFloat("a", "", amplitude) * unit * MotionScale;
                 float spd = args.GetFloat("s", speed);
                 float dens = args.GetFloat("d", spacing);
                 for (int c = range.x; c < range.y; c++, n++)

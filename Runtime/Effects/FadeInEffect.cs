@@ -33,7 +33,7 @@ namespace com.mjgame.nmd.nkl
                 TagArgs args = GetRangeArgs(r);
                 float delay = args.GetFloat("d", "", charDelay);
                 float length = args.GetFloat("t", charDuration);
-                Vector2 from = new Vector2(args.GetFloat("x", slide.x), args.GetFloat("y", slide.y)) * UnitScale;
+                Vector2 from = new Vector2(args.GetFloat("x", slide.x), args.GetFloat("y", slide.y)) * (UnitScale * MotionScale);
                 for (int c = range.x; c < range.y; c++)
                 {
                     bool counts = !skipSpaces || info.characterInfo[c].isVisible;

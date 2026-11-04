@@ -3,6 +3,7 @@
     "rootNamespace": "com.mjgame.nmd.nkl.tests",
     "references": [
         "com.mjgame.nmd.nkl.20",
+        "com.mjgame.nmd.nkl.20.Editor",
         "Unity.TextMeshPro",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

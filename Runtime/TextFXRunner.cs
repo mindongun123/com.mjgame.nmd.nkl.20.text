@@ -71,7 +71,7 @@ namespace com.mjgame.nmd.nkl
             float dt = Mathf.Min(Time.unscaledDeltaTime, MaxDeltaTime);
             _pendingUnscaled += dt;
             _pendingScaled += dt * Time.timeScale;
-            int maxRate = TextFXSettings.Instance.maxUpdatesPerSecond;
+            int maxRate = TextFXSettings.Instance.MaxUpdatesPerSecond;
             // Small tolerance so a 60 fps frame time still triggers a 30/s tick every second frame.
             if (maxRate > 0 && _pendingUnscaled < 1f / maxRate - 0.002f) return;
             TickAll(Mathf.Min(_pendingUnscaled, MaxDeltaTime), Mathf.Min(_pendingScaled, MaxDeltaTime));

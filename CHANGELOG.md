@@ -5,6 +5,8 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-04
+
 ### Removed
 - Menu **Tools › com.mjgame.nmd.nkl › Text › Auto Preview**. Bật/tắt Auto Preview trong cửa sổ **Settings...**.
 
@@ -14,10 +16,13 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 - Hiệu năng: `TagArgs` parse số và màu một lần khi text dựng lại, `GetFloat`/`GetColor` mỗi frame chỉ tra mảng.
 - Hiệu năng: mỗi frame chỉ upload kênh mesh mà effect sửa (vị trí hoặc màu).
 - Template preset được serialize JSON một lần khi nạp, không phải mỗi lần tạo effect cho tag.
-
 - Sample gộp thành một scene `Sample/sample.unity` với hai tab Effects / Shop (`SampleTabs`); bỏ `shop-sample.unity` và `ex.unity`. Sample không còn phụ thuộc asset UI ngoài package.
 
 ### Added
+- `ShineEffect` và tag dựng sẵn `<shine>`: vệt sáng quét ngang chữ, chỉ đổi màu vertex (không tạo material). Tham số tag `c`, `w`, `t`, `i`, `a`.
+- Giảm chuyển động: setting **Motion strength** (`motionScale`), **Per quality level** (`qualityOverrides`, ghi đè motion và max updates/s theo mức Quality), và `TextFXSettings.SetPlayerMotionScale()` cho tuỳ chọn của người chơi. Wave, Shake, Wobble, Pulse, Bounce, Fade nhân chuyển động với `MotionScale`.
+- Cảnh báo tag gõ sai trong Inspector của `TextFX`, kèm gợi ý tên gần đúng.
+- Cửa sổ **Effect Gallery** (Tools › com.mjgame.nmd.nkl › Text): xem trước trực tiếp mọi tag dựng sẵn và preset, nút Copy chuỗi mẫu và Apply vào text đang chọn.
 - `TextFX.CullHiddenTexts` (mặc định bật): khi Play, text chỉ chạy effect lặp sẽ không được cập nhật nếu Canvas tắt, `CanvasGroup` alpha = 0, bị `RectMask2D` che hoặc là text 3D ngoài camera.
 - Setting **Max updates / second** (`maxUpdatesPerSecond`, mặc định 0 = mỗi frame): giới hạn số lần cập nhật effect mỗi giây khi Play, ví dụ 30 cho mobile.
 - `TextEffect.Modifies`: effect tự viết khai báo nó sửa vị trí, màu hay cả hai.
