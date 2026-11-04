@@ -45,7 +45,9 @@ namespace com.mjgame.nmd.nkl.editor
                 string state = effect.IsPlaying ? "Playing" : "Stopped";
                 if (effect.IsLooping) state += " (looping)";
                 EditorGUILayout.LabelField("State", state);
-                if (effect.IsPlaying) Repaint();
+                // Only animated effects change state on their own; static ones (layouts, gradient) never
+                // stop, so repainting for them would redraw the inspector every frame for nothing.
+                if (effect.IsPlaying && effect.IsAnimated) Repaint();
             }
         }
 

@@ -40,7 +40,7 @@ namespace com.mjgame.nmd.nkl.editor
                 if (effect.IsAuto) state += " (built-in tag)";
                 EditorGUILayout.LabelField(ObjectNames.NicifyVariableName(effect.GetType().Name), tag + ", " + state);
             }
-            if (fx.IsPlaying) Repaint();
+            if (fx.IsInUpdateLoop) Repaint(); // only while something animates
 
             DrawCanvasWarning(fx, effects);
             DrawAddButtons(fx, effects);
@@ -52,7 +52,7 @@ namespace com.mjgame.nmd.nkl.editor
             ("Wave", typeof(WaveEffect)), ("Shake", typeof(ShakeEffect)), ("Pulse", typeof(PulseEffect)),
             ("Wobble", typeof(WobbleEffect)), ("Rainbow", typeof(RainbowEffect)), ("Flash", typeof(ColorFlashEffect)),
             ("Bounce", typeof(BounceInEffect)), ("Fade", typeof(FadeInEffect)), ("Gradient", typeof(GradientEffect)), ("Shine", typeof(ShineEffect)),
-            ("Typewriter", typeof(TypewriterEffect)),
+            ("Typewriter", typeof(TypewriterEffect)), ("Arc", typeof(ArcLayout)), ("Curve", typeof(CurveLayout)), ("Line", typeof(LineLayout)),
         };
 
         // Adds an editable effect with its built-in tag: <wave> in this text then uses its values.
@@ -121,10 +121,23 @@ namespace com.mjgame.nmd.nkl.editor
             Undo.CollapseUndoOperations(group);
         }
 
-        static void DrawTagWarnings(TextFX fx)
+        // Validation result cached per text: only recomputed when the string or the effects change.
+        string _checkedText;
+        int _checkedEffects = -1;
+        System.Collections.Generic.List<TextTagValidator.Issue> _issues;
+
+        void DrawTagWarnings(TextFX fx)
         {
             if (fx.Text == null) return;
-            var issues = TextTagValidator.Find(fx.Text.text, fx.gameObject);
+            string text = fx.Text.text;
+            int effects = fx.GetComponents<TextEffect>().Length;
+            if (_issues == null || !ReferenceEquals(text, _checkedText) || effects != _checkedEffects)
+            {
+                _issues = TextTagValidator.Find(text, fx.gameObject);
+                _checkedText = text;
+                _checkedEffects = effects;
+            }
+            var issues = _issues;
             if (issues.Count == 0) return;
             var message = new System.Text.StringBuilder("Unknown tags, TMP will print them as text:");
             foreach (var issue in issues)

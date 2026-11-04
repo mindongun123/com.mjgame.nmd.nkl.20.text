@@ -5,6 +5,17 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 
 ## [Unreleased]
 
+### Added
+- Layout tĩnh `ArcLayout` (cong lên/xuống, vòng tròn 360°; kích thước theo góc hoặc theo bán kính cố định) và `CurveLayout` (uốn theo `AnimationCurve`), trên lớp nền `TextLayoutEffect` để viết layout riêng. Chỉ tính lại khi text đổi; chữ nhiều dòng trên vòng cung nằm trên các vòng tròn đồng tâm nên không bị dồn.
+- Size Curve cho mọi layout: kích thước từng chữ theo vị trí trong câu (ví dụ to dần vào giữa), căn theo chân, giữa hoặc đỉnh (Align); Keep Spacing giãn khoảng cách theo kích thước mới. `LineLayout`: đường thẳng có thể nghiêng, để dùng Size Curve trên chữ thẳng.
+- `TextEffect.Order`: effect có Order nhỏ chạy trước. Layout dùng -100 nên Wave, Shake, Gradient áp lên chữ đã uốn.
+- Inspector của `TextFX` có nút Add Arc / Add Curve / Add Line. Sample có thêm tab **Layout**.
+
+### Fixed
+- Editor bị lag và báo "Invalid editor window of type: UnityEditor.CurveEditorWindow" khi kéo curve hoặc slider của effect. Mỗi bước kéo từng bắt TMP dựng lại cả text. Giờ các thay đổi được gộp thành một lần cập nhật mỗi frame, và text chỉ được parse lại khi đổi Tag.
+- Inspector của effect tĩnh (layout, gradient đứng yên) và của `TextFX` không còn vẽ lại liên tục mỗi frame. Cảnh báo tag sai chỉ quét lại khi text đổi.
+- Layout không còn báo lỗi index ở mọi frame sau khi Unity nạp lại script.
+
 ## [0.6.0] - 2026-11-04
 
 ### Removed

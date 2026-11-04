@@ -27,7 +27,7 @@ Package không thay thế TMP mà chạy bên trên nó, nên vẫn giữ đư�
 12. [Viết effect mới](#viết-effect-mới)
 13. [API](#api)
 14. [Test](#test)
-15. [Giới hạn đã biết](#giới-hạn-đã-biết)
+15. [Giới hạn đã biết](#giới-hạn-đã-biết) · [Layout: chữ vòng cung, chữ uốn cong](#layout-chữ-vòng-cung-chữ-uốn-cong)
 16. [Sample](#sample)
 
 ---
@@ -157,6 +157,27 @@ Mở **Tools › com.mjgame.nmd.nkl › Text › Settings...** Cửa sổ này c
 Nút **Reset to Defaults** ở cuối cửa sổ đưa mọi setting về giá trị mặc định trong bảng trên.
 
 TMP dựng text 3D nhỏ hơn text UI 10 lần ở cùng font size, nên hệ số ×0.1 giúp cùng thông số trông giống nhau trên cả hai loại. Asset có sẵn trong package ở `Runtime/Resources/TextFXSettings.asset` và có tác dụng cả trong build. Cửa sổ Settings sửa thẳng asset này. Nếu asset bị xóa, package dùng giá trị mặc định, và nút **Create Settings Asset** sẽ tạo lại ở chỗ cũ. Khi package cài từ registry hoặc git (chỉ đọc), nút sẽ tạo ở `Assets/Resources/`. Từ code có thể dùng `TextFXSettings.Set(asset)`.
+
+---
+
+## Layout: chữ vòng cung, chữ uốn cong
+
+Đặt chữ theo một đường cong **cố định**: chỉ tính lại khi text đổi, mỗi frame không tốn gì. Thêm component vào text có `TextFX` (Inspector của `TextFX` có nút **Add Arc** / **Add Curve**), xem ngay trong Edit mode.
+
+| Component | Dùng cho | Thông số |
+|---|---|---|
+| `ArcLayout` | Huy hiệu, banner, logo, chữ quanh vòng quay | `Direction`: Up (∩) hoặc Down (∪). `Size By`: **Angle**, tức là chữ luôn trải đúng `Angle` độ dù dài hay ngắn (360 = vòng tròn); hoặc **Radius**, tức là vòng tròn cố định bán kính `Radius`: chữ dài thì quấn xa hơn, bán kính càng lớn càng phẳng, nhiều text dùng chung một bán kính sẽ nằm trên cùng một đường cong |
+| `LineLayout` | Chữ thẳng hoặc nghiêng, thường dùng cùng Size Curve | `Tilt`: góc nghiêng (độ), dương = đi lên về bên phải |
+| `CurveLayout` | Chữ kiểu WordArt | `Curve`: hình dạng từ trái (0) sang phải (1), vẽ trong Inspector. `Height`: độ nâng ứng với giá trị 1 (âm = lật ngược) |
+
+Thông số chung: `Anchor` (đầu, giữa hoặc cuối chữ nằm ở điểm neo của đường, ví dụ đỉnh vòng cung), `Rotate Characters` (tắt thì chữ luôn đứng thẳng).
+
+**Size Curve** (mọi layout): bật lên để mỗi chữ có kích thước theo vị trí trong câu. Trục x của curve đi từ 0 (chữ đầu) đến 1 (chữ cuối), trục y là tỉ lệ (1 = bình thường). Ví dụ to dần vào giữa (0 → 0.8, 0.5 → 1.6, 1 → 0.8), hoặc to dần sang phải. **Align** chọn phần nào của chữ thẳng hàng khi phóng: **Bottom** (mặc định) thì chân chữ cùng một đường và chữ to lên phía trên; **Middle** thì tâm các chữ cùng một đường và chữ to ra cả trên lẫn dưới; **Top** thì đỉnh cùng một đường và chữ to xuống dưới. **Keep Spacing** (mặc định bật) giãn khoảng cách theo kích thước mới để chữ to không đè lên nhau. Kết hợp được với Arc, ví dụ "MEGA WIN" vừa cong vừa phình giữa.
+
+- **Kết hợp được với mọi effect**: layout luôn chạy trước (`Order = -100`), nên `<wave>` lượn theo chữ đã uốn, `<gold>` tô màu theo hình dạng mới, chữ khối 3D uốn theo.
+- **Nhiều dòng**: mỗi dòng nằm trên một vòng tròn đồng tâm riêng, nên dòng phía trong không bị dồn chữ.
+- **Đổi thông số bằng code**: dùng property (`arc.Angle = 120f`) là tự cập nhật. Sửa field của layout tự viết thì gọi `Refresh()`.
+- **Layout tự viết**: kế thừa `TextLayoutEffect` và viết `Evaluate(distance, out point, out direction)`, tức là điểm và hướng của đường tại một khoảng cách tính từ điểm neo.
 
 ---
 
@@ -454,6 +475,8 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 
 **`TextFXSettings`**: `Instance`, `Set()`, `IsWorld()`, `UsesTimeScale()`, `UnitScale()`, `MotionScale`, `MaxUpdatesPerSecond`, `SetPlayerMotionScale()`
 
+**`ArcLayout`** / **`CurveLayout`**: `Angle` (âm = cong xuống), `Radius`, `Direction`, `SizeBy` / `Curve`, `Height`; chung: `TextAnchor`, `RotateCharacters`, `UseSizeCurve`, `SizeCurve`, `SizeAlignment`, `KeepSpacing`, `Refresh()`; `LineLayout`: `Tilt`
+
 **`TextFXPresets`**: `Register()`, `SetPresets()`, `Reload()`, `Prewarm()`
 
 **`TagArgs`**: `Parse()`, `TryGet()`, `GetFloat()`, `GetColor()`
@@ -495,6 +518,7 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 - Text rất dài với effect lặp vẫn tốn CPU theo số ký tự.
 - Mọi text không phải `TextMeshProUGUI` đều được coi là text 3D (hệ số và timeScale của World).
 - Text đang khuất chỉ được bỏ qua khi nó chỉ chạy effect lặp (xem `CullHiddenTexts`). Effect chạy một lần vẫn chạy cho xong; text nằm dưới `Mask` (stencil) không được coi là khuất. Nên dừng effect khi object trả về pool.
+- Layout (`ArcLayout`, `CurveLayout`) chỉ dời và xoay các ký tự, còn khung `RectTransform` vẫn là khung chữ thẳng: vùng bấm, `RectMask2D` và Layout Group vẫn tính theo khung cũ. Gạch chân và gạch ngang của TMP không uốn theo.
 - `GradientEffect` không nhận tham số trong tag; dùng tag preset (`<gold>`...) thay thế.
 
 ---
@@ -502,8 +526,9 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 ## Sample
 | Scene | Nội dung |
 |---|---|
-| `Sample/sample.unity` | Một scene, hai tab ở cạnh dưới: **Effects** và **Shop** |
+| `Sample/sample.unity` | Một scene, ba tab ở cạnh dưới: **Effects**, **Layout** và **Shop** |
 | Tab Effects | Mọi effect, tag, typewriter, counter, extrude; nút Replay / Skip / +1234 |
+| Tab Layout | `ArcLayout` cong lên, cong xuống, vòng tròn 360°, nhiều dòng, kết hợp `<gold>`/`<wave>`; `CurveLayout` kiểu WordArt; Size Curve: phình giữa, vừa cong vừa phình, to dần trên đường nghiêng |
 | Tab Shop | Shop 100 item: giá rút gọn, mua hàng (rung khi thiếu tiền, nảy khi mua được), huy hiệu HOT trong sub-Canvas, coin đếm có animation, đồng hồ sale, nút Open |
 
 Tab bị ẩn thì tắt hẳn, nên text của nó rời vòng update. `SampleTabs` gọi `TextFXPresets.Prewarm()` khi scene mở. Shop chỉ tạo 100 item lần đầu mở tab Shop.

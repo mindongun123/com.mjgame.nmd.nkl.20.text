@@ -151,7 +151,11 @@ namespace com.mjgame.nmd.nkl
 
         internal void Register(TextEffect effect)
         {
-            if (!_effects.Contains(effect)) _effects.Add(effect);
+            if (_effects.Contains(effect)) return;
+            // Keep the list sorted by Order (stable): layouts (negative order) run before animations.
+            int i = _effects.Count;
+            while (i > 0 && (_effects[i - 1] == null || _effects[i - 1].Order > effect.Order)) i--;
+            _effects.Insert(i, effect);
         }
 
         internal void Unregister(TextEffect effect) => _effects.Remove(effect);

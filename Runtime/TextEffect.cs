@@ -54,6 +54,12 @@ namespace com.mjgame.nmd.nkl
         public virtual bool IsAnimated => true;
 
         /// <summary>
+        /// Effects with a lower order are applied first. Layouts (arc, curve) use a negative order, so
+        /// animations such as Wave move the characters along the bent text. Default 0.
+        /// </summary>
+        public virtual int Order => 0;
+
+        /// <summary>
         /// Mesh channels this effect writes. Override to Vertices or Colors32 only, so TMP uploads just
         /// that channel (about half the upload for move-only or color-only effects).
         /// </summary>
@@ -86,6 +92,9 @@ namespace com.mjgame.nmd.nkl
 
         protected virtual void OnEnable()
         {
+#if UNITY_EDITOR
+            _parsedTag = _tag; // the text is parsed with this tag on enable; OnValidate re-parses only on change
+#endif
             Fx.Register(this);
             if (_playOnEnable && (Application.isPlaying || !IsAnimated || AutoPreviews)) Play();
         }
@@ -99,13 +108,27 @@ namespace com.mjgame.nmd.nkl
         }
 
 #if UNITY_EDITOR
+        [System.NonSerialized] bool _validatePending;
+        [System.NonSerialized] string _parsedTag;
+
+        // Called on every inspector change (each step of a curve or slider drag). Coalesced into one
+        // update per editor frame, and the text is only re-parsed when the tag changed: other settings just
+        // re-apply the effect on the existing mesh, which is cheap and keeps the inspector (and an open
+        // curve editor) from being rebuilt.
         protected virtual void OnValidate()
         {
             _textVersion = -1;
+            if (_validatePending) return;
+            _validatePending = true;
             UnityEditor.EditorApplication.delayCall += () =>
             {
+                _validatePending = false;
                 if (this == null || Fx == null) return;
-                Fx.Reparse();
+                if (!string.Equals(_parsedTag, _tag, System.StringComparison.Ordinal))
+                {
+                    _parsedTag = _tag;
+                    Fx.Reparse();
+                }
                 // Static effects in edit mode start/refresh here so inspector changes show immediately.
                 if (isActiveAndEnabled && _playOnEnable && !Application.isPlaying && (!IsAnimated || AutoPreviews) && !_playing) Play();
                 if (_playing) Fx.Wake();
@@ -184,6 +207,13 @@ namespace com.mjgame.nmd.nkl
         protected virtual void OnTextRebuilt() { }
 
         protected void ResetTime() => _time = 0f;
+
+        /// <summary>Rebuilds ranges and calls <see cref="OnTextRebuilt"/> on the next update (after a setting changed from code).</summary>
+        protected void Invalidate()
+        {
+            _textVersion = -1;
+            if (_playing && isActiveAndEnabled) Fx.Wake();
+        }
 
         internal void Step(TMP_TextInfo info, float deltaTime, int textVersion)
         {
