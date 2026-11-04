@@ -15,6 +15,8 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 - Hiệu năng: mỗi frame chỉ upload kênh mesh mà effect sửa (vị trí hoặc màu).
 - Template preset được serialize JSON một lần khi nạp, không phải mỗi lần tạo effect cho tag.
 
+- Sample gộp thành một scene `Sample/sample.unity` với hai tab Effects / Shop (`SampleTabs`); bỏ `shop-sample.unity` và `ex.unity`. Sample không còn phụ thuộc asset UI ngoài package.
+
 ### Added
 - `TextFX.CullHiddenTexts` (mặc định bật): khi Play, text chỉ chạy effect lặp sẽ không được cập nhật nếu Canvas tắt, `CanvasGroup` alpha = 0, bị `RectMask2D` che hoặc là text 3D ngoài camera.
 - Setting **Max updates / second** (`maxUpdatesPerSecond`, mặc định 0 = mỗi frame): giới hạn số lần cập nhật effect mỗi giây khi Play, ví dụ 30 cho mobile.

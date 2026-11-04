@@ -493,9 +493,12 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 ## Sample
 | Scene | Nội dung |
 |---|---|
-| `Sample/sample.unity` | Mọi effect, tag, typewriter, counter, extrude; nút Replay / Skip / +1234 |
-| `Sample/ShopSample.unity` | Shop 100 item: giá rút gọn, mua hàng (rung khi thiếu tiền, nảy khi mua được), huy hiệu HOT trong sub-Canvas, coin đếm có animation, đồng hồ sale, nút Open |
+| `Sample/sample.unity` | Một scene, hai tab ở cạnh dưới: **Effects** và **Shop** |
+| Tab Effects | Mọi effect, tag, typewriter, counter, extrude; nút Replay / Skip / +1234 |
+| Tab Shop | Shop 100 item: giá rút gọn, mua hàng (rung khi thiếu tiền, nảy khi mua được), huy hiệu HOT trong sub-Canvas, coin đếm có animation, đồng hồ sale, nút Open |
+
+Tab bị ẩn thì tắt hẳn, nên text của nó rời vòng update. `SampleTabs` gọi `TextFXPresets.Prewarm()` khi scene mở. Shop chỉ tạo 100 item lần đầu mở tab Shop.
 
 `Sample/Gradients/` chứa 5 `TextGradient` mẫu (Fire, Ice, Gold, Rainbow, Toxic). Script sample nằm ở `Sample/Scripts/` (assembly `com.mjgame.nmd.nkl.20.Sample`).
 
-> Sample dùng font và material trong `Assets/Font` của project. Khi tách package sang project khác, cần đưa chúng vào package hoặc đổi sang font của project đó.
+> Sample chỉ dùng font trong `Runtime/Font` của package và UI mặc định của Unity, không phụ thuộc asset nào khác của project. Cần import TMP Essential Resources như mọi project dùng TextMeshPro.
