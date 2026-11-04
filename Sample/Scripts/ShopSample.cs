@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text.sample
+namespace com.mjgame.nmd.nkl.sample
 {
     /// <summary>
     /// Shop with many items: shows how to use the package on big lists.

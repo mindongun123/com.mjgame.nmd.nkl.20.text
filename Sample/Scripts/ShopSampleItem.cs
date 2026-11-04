@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace com.nmd.nkl.text.sample
+namespace com.mjgame.nmd.nkl.sample
 {
     /// <summary>One shop cell. Effects are added in the template; this only fills text and triggers them.</summary>
     public sealed class ShopSampleItem : MonoBehaviour

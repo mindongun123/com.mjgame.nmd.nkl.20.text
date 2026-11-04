@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace com.nmd.nkl.text.editor
+namespace com.mjgame.nmd.nkl.editor
 {
     /// <summary>
     /// Play/Stop for all effects, and a warning when looping effects would keep a big canvas rebatching.
@@ -20,7 +20,7 @@ namespace com.nmd.nkl.text.editor
             if (effects.Length == 0)
             {
                 EditorGUILayout.HelpBox("Write a built-in tag in the text (<wave>, <gold>...) or add an effect from " +
-                                        "Add Component > com.nmd.nkl > Text > Effects.", MessageType.Info);
+                                        "Add Component > com.mjgame.nmd.nkl > Text > Effects.", MessageType.Info);
                 DrawAddButtons(fx, effects);
                 DrawRemoveButton(fx);
                 return;

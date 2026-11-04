@@ -1,11 +1,11 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>Characters jitter randomly. Loops, or stops after <see cref="duration"/>. Tag args: a (or =), r.</summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Shake")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Shake")]
     public sealed class ShakeEffect : TextEffect
     {
         [Tooltip("Max offset, in text units.")]

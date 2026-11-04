@@ -5,6 +5,9 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 
 ## [Unreleased]
 
+### Changed
+- Đổi tên package thành `com.mjgame.nmd.nkl.20`. Các assembly đổi thành `com.mjgame.nmd.nkl.20`, `.Editor`, `.Tests`, `.Sample`. Namespace đổi thành `com.mjgame.nmd.nkl` (`.editor`, `.sample`, `.tests`), menu đổi thành `com.mjgame.nmd.nkl › Text`.
+
 ### Added
 - **Tag dựng sẵn**: `<wave>`, `<shake>`, `<pulse>`, `<wobble>`, `<rainbow>`, `<flash>`, `<bounce>`, `<fade>`, `<gold>`, `<fire>`, `<ice>`, `<toxic>` chạy được trên mọi text có `TextFX`, không cần thêm effect. `TextFX` tự thêm một effect ẩn và không lưu vào scene cho mỗi tag được dùng.
 - **Prefab preset** `Runtime/Resources/NKL/TextFXPresets`: thông số mặc định của tag dựng sẵn cho cả game, và nơi thêm tag mới. API `TextFXPresets.Register()`, `SetPresets()`, `Reload()`. Lưu prefab trong Editor thì tự nạp lại.

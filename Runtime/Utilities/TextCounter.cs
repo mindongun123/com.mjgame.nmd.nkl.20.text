@@ -3,14 +3,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Animated number (coins, score, rewards, timers). Formats with <see cref="TextFormat"/> into a reused
     /// buffer and only re-renders when the shown value changes, so counting allocates no garbage.
     /// </summary>
     [RequireComponent(typeof(TMP_Text))]
-    [AddComponentMenu("com.nmd.nkl/Text/Text Counter")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Text Counter")]
     public sealed class TextCounter : MonoBehaviour
     {
         public enum Display

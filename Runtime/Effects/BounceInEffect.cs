@@ -1,11 +1,11 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>Characters pop in one after another with an overshoot. Plays once, then costs nothing.</summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Bounce In")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Bounce In")]
     public sealed class BounceInEffect : TextEffect
     {
         public override string DefaultTag => "bounce";

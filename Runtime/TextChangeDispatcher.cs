@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Single listener on TMP's global TEXT_CHANGED event, routing each change only to the

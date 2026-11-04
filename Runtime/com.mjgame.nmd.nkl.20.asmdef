@@ -1,6 +1,6 @@
 {
-    "name": "com.nmd.nkl.20.text",
-    "rootNamespace": "com.nmd.nkl.text",
+    "name": "com.mjgame.nmd.nkl.20",
+    "rootNamespace": "com.mjgame.nmd.nkl",
     "references": [
         "Unity.TextMeshPro"
     ],

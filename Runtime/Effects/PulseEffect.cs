@@ -1,11 +1,11 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>Characters grow and shrink rhythmically. Loops forever. Tag args: a (or =), s, d.</summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Pulse")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Pulse")]
     public sealed class PulseEffect : TextEffect
     {
         [Tooltip("Extra scale at the peak (0.15 = 115%).")]

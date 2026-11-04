@@ -1,6 +1,6 @@
 using TMPro;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Allocation-free setters for common game UI values. They format into a shared buffer and call

@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Colors the text with a multi-key <see cref="Gradient"/> (up to 8 colors + alpha), along a
@@ -9,7 +9,7 @@ namespace com.nmd.nkl.text
     /// Without scrolling it is static: applied once, then free until the text changes, and visible in edit mode.
     /// </summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Gradient")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Gradient")]
     public sealed class GradientEffect : TextEffect
     {
         public enum Direction

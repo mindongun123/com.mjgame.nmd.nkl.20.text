@@ -1,11 +1,11 @@
-# NKL Text — `com.nmd.nkl.20.text`
+# NKL Text — `com.mjgame.nmd.nkl.20`
 
 Bộ công cụ chữ cho UI game mobile, xây trên **TextMeshPro**: hiệu ứng, màu/gradient, định dạng số và thời gian không tạo GC, typewriter, số chạy.
 Package không thay thế TMP mà chạy bên trên nó, nên vẫn giữ được batching, font fallback, đa ngôn ngữ và tooling của Unity. Mọi thứ đều là component hoặc extension, gắn vào `TextMeshProUGUI` có sẵn là dùng được.
 
 - Unity 2022.3+, TextMeshPro 3.0.7
-- Namespace: `com.nmd.nkl.text`
-- Menu: **Add Component › com.nmd.nkl › Text**, **GameObject › com.nmd.nkl › Text**
+- Namespace: `com.mjgame.nmd.nkl`
+- Menu: **Add Component › com.mjgame.nmd.nkl › Text**, **GameObject › com.mjgame.nmd.nkl › Text**
 - Lịch sử thay đổi: [CHANGELOG.md](CHANGELOG.md)
 
 ---
@@ -48,7 +48,7 @@ Package không thay thế TMP mà chạy bên trên nó, nên vẫn giữ đư�
 ## Bắt đầu nhanh
 
 ```csharp
-using com.nmd.nkl.text;
+using com.mjgame.nmd.nkl;
 
 price.SetAbbreviated(15300, prefix: "<sprite name=coin> ");   // "🪙 15.3k"
 timer.SetTime(secondsLeft, TimeFormat.Auto, roundUp: true);   // "1:02:05"
@@ -56,9 +56,9 @@ title.GetComponent<BounceInEffect>().Play();                  // khi mở popup
 coins.GetComponent<TextCounter>().Add(250);                   // số chạy lên
 ```
 
-Trong Editor, cách nhanh nhất: gắn **Add Component › com.nmd.nkl › Text › Text FX** cho text, rồi viết tag có sẵn trong chuỗi, ví dụ `Nhận <wave>1000</wave> <gold>vàng</gold>` (xem [Tag dựng sẵn](#tag-dựng-sẵn)). Không cần thêm effect nào.
+Trong Editor, cách nhanh nhất: gắn **Add Component › com.mjgame.nmd.nkl › Text › Text FX** cho text, rồi viết tag có sẵn trong chuỗi, ví dụ `Nhận <wave>1000</wave> <gold>vàng</gold>` (xem [Tag dựng sẵn](#tag-dựng-sẵn)). Không cần thêm effect nào.
 
-Muốn effect áp cả text hoặc chỉnh riêng một item: **Add Component › com.nmd.nkl › Text › Effects › Wave**, rồi bấm **Preview** trên Inspector để xem ngay mà không cần Play.
+Muốn effect áp cả text hoặc chỉnh riêng một item: **Add Component › com.mjgame.nmd.nkl › Text › Effects › Wave**, rồi bấm **Preview** trên Inspector để xem ngay mà không cần Play.
 
 ---
 
@@ -218,7 +218,7 @@ Có 4 lớp tô màu, từ rẻ nhất đến linh hoạt nhất. Có thể kế
 ### GradientEffect
 | Trường | Tùy chọn |
 |---|---|
-| `preset` / `gradient` | `Gradient` của Unity (tối đa 8 mốc màu + alpha). `preset` là asset `TextGradient` dùng chung (**Create › com.nmd.nkl › Text › Text Gradient**), sửa một chỗ thì mọi text dùng nó đổi theo |
+| `preset` / `gradient` | `Gradient` của Unity (tối đa 8 mốc màu + alpha). `preset` là asset `TextGradient` dùng chung (**Create › com.mjgame.nmd.nkl › Text › Text Gradient**), sửa một chỗ thì mọi text dùng nó đổi theo |
 | `direction` | `Horizontal`, `Vertical` (trên xuống dưới), `Angle` (theo `angle`), `Radial` (từ tâm ra), `Characters` (theo thứ tự chữ, không phụ thuộc layout) |
 | `coloring` | `Smooth` (mỗi đỉnh một màu, chuyển màu mượt cả trong một chữ) / `PerCharacter` (mỗi chữ một khối màu) |
 | `repeat`, `offset`, `wrap` | Gradient lặp bao nhiêu lần trên toàn text, dịch vị trí, kiểu lặp `Repeat` / `PingPong` / `Clamp` |
@@ -375,11 +375,11 @@ Khi effect đang chạy, việc gửi mesh mới làm **Canvas chứa text đó 
 ## Viết effect mới
 
 ```csharp
-using com.nmd.nkl.text;
+using com.mjgame.nmd.nkl;
 using TMPro;
 using UnityEngine;
 
-[AddComponentMenu("com.nmd.nkl/Text/Effects/Swing")]
+[AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Swing")]
 public sealed class SwingEffect : TextEffect
 {
     public float angle = 15f;
@@ -427,7 +427,7 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 ---
 
 ## Test
-**Window › General › Test Runner › EditMode** › `com.nmd.nkl.20.text.Tests`: 72 test, gồm
+**Window › General › Test Runner › EditMode** › `com.mjgame.nmd.nkl.20.Tests`: 72 test, gồm
 - định dạng số, rút gọn, thời gian, phần trăm, kể cả các giá trị biên (`long.MinValue`/`MaxValue`, số âm, NaN);
 - tag: gỡ khỏi chữ, lồng nhau, tham số, `<nofx>` (tất cả / theo tên), tag lạ, hoa thường;
 - icon: được tô như chữ, `<nofx>` giữ màu gốc;
@@ -456,6 +456,6 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 | `Sample/sample.unity` | Mọi effect, tag, typewriter, counter, extrude; nút Replay / Skip / +1234 |
 | `Sample/ShopSample.unity` | Shop 100 item: giá rút gọn, mua hàng (rung khi thiếu tiền, nảy khi mua được), huy hiệu HOT trong sub-Canvas, coin đếm có animation, đồng hồ sale, nút Open |
 
-`Sample/Gradients/` chứa 5 `TextGradient` mẫu (Fire, Ice, Gold, Rainbow, Toxic). Script sample nằm ở `Sample/Scripts/` (assembly `com.nmd.nkl.20.text.Sample`).
+`Sample/Gradients/` chứa 5 `TextGradient` mẫu (Fire, Ice, Gold, Rainbow, Toxic). Script sample nằm ở `Sample/Scripts/` (assembly `com.mjgame.nmd.nkl.20.Sample`).
 
 > Sample dùng font và material trong `Assets/Font` của project. Khi tách package sang project khác, cần đưa chúng vào package hoặc đổi sang font của project đó.

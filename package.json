@@ -1,5 +1,5 @@
 {
-  "name": "com.nmd.nkl.20.text",
+  "name": "com.mjgame.nmd.nkl.20",
   "version": "0.3.0",
   "displayName": "NKL Text",
   "description": "Text effects, styles and helpers built on top of TextMeshPro. Effects edit vertex data only, so text is never regenerated per frame.",

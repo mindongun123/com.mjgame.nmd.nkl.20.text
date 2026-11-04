@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Reveals characters one by one (dialogue, tutorials). Hides characters through vertex alpha,
@@ -17,7 +17,7 @@ namespace com.nmd.nkl.text
     /// </list>
     /// </summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Typewriter")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Typewriter")]
     public sealed class TypewriterEffect : TextEffect
     {
         // Reveals the whole text by default.

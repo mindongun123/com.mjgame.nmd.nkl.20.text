@@ -1,12 +1,13 @@
 {
-    "name": "com.nmd.nkl.20.text.Sample",
-    "rootNamespace": "com.nmd.nkl.text.sample",
+    "name": "com.mjgame.nmd.nkl.20.Editor",
+    "rootNamespace": "com.mjgame.nmd.nkl.editor",
     "references": [
-        "com.nmd.nkl.20.text",
-        "Unity.TextMeshPro",
-        "UnityEngine.UI"
+        "com.mjgame.nmd.nkl.20",
+        "Unity.TextMeshPro"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

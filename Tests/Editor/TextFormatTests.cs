@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace com.nmd.nkl.text.tests
+namespace com.mjgame.nmd.nkl.tests
 {
     public class TextFormatTests
     {

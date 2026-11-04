@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Base class for per-character effects. Subclasses edit <see cref="TMP_TextInfo.meshInfo"/>
@@ -111,12 +111,12 @@ namespace com.nmd.nkl.text
             if (!_playOnEnable) Stop();
         }
 
-        const string AutoPreviewPref = "com.nmd.nkl.text.AutoPreview";
+        const string AutoPreviewPref = "com.mjgame.nmd.nkl.AutoPreview";
         static int _autoPreview = -1;
 
         /// <summary>
         /// Edit mode only: effects with Play On Enable also play outside Play mode, so the scene and prefab
-        /// views show them animated. Toggle in Tools › com.nmd.nkl › Text › Auto Preview (on by default).
+        /// views show them animated. Toggle in Tools › com.mjgame.nmd.nkl › Text › Auto Preview (on by default).
         /// </summary>
         public static bool AutoPreview
         {

@@ -1,12 +1,12 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace com.nmd.nkl.text.editor
+namespace com.mjgame.nmd.nkl.editor
 {
-    /// <summary>Tools › com.nmd.nkl › Text › Auto Preview: play effects in edit mode without pressing Preview.</summary>
+    /// <summary>Tools › com.mjgame.nmd.nkl › Text › Auto Preview: play effects in edit mode without pressing Preview.</summary>
     static class AutoPreviewMenu
     {
-        const string MenuPath = "Tools/com.nmd.nkl/Text/Auto Preview";
+        const string MenuPath = "Tools/com.mjgame.nmd.nkl/Text/Auto Preview";
 
         [MenuItem(MenuPath)]
         static void Toggle()

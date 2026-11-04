@@ -1,14 +1,14 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Characters cycle through the hue wheel (HSV, per character). For custom colors, direction,
     /// smooth per-vertex blending or presets use <see cref="GradientEffect"/>.
     /// </summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Rainbow")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Rainbow")]
     public sealed class RainbowEffect : TextEffect
     {
         [Tooltip("Hue cycles per second.")]

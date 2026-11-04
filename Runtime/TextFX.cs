@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Drives the <see cref="TextEffect"/> components on the same GameObject.
@@ -24,7 +24,7 @@ namespace com.nmd.nkl.text
     [RequireComponent(typeof(TMP_Text))]
     [DisallowMultipleComponent]
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Text FX")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Text FX")]
     public sealed class TextFX : MonoBehaviour, ITextPreprocessor
     {
         /// <summary>Excludes its content from effects: &lt;nofx&gt; (all) or &lt;nofx=gradient,wave&gt;.</summary>

@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Thick "3D" title: keeps a solid-colored copy of this text, offset downwards and drawn behind it.
@@ -11,7 +11,7 @@ namespace com.nmd.nkl.text
     /// </summary>
     [RequireComponent(typeof(TMP_Text))]
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Text Extrude")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Text Extrude")]
     public sealed class TextExtrude : MonoBehaviour
     {
         [SerializeField] TMP_Text _layer;

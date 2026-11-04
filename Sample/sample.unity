@@ -1804,7 +1804,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 158961051}
-        m_TargetAssemblyTypeName: com.nmd.nkl.text.TextEffect, com.nmd.nkl.20.text
+        m_TargetAssemblyTypeName: com.mjgame.nmd.nkl.TextEffect, com.mjgame.nmd.nkl.20
         m_MethodName: Play
         m_Mode: 1
         m_Arguments:
@@ -1816,7 +1816,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1687177480}
-        m_TargetAssemblyTypeName: com.nmd.nkl.text.TextEffect, com.nmd.nkl.20.text
+        m_TargetAssemblyTypeName: com.mjgame.nmd.nkl.TextEffect, com.mjgame.nmd.nkl.20
         m_MethodName: Play
         m_Mode: 1
         m_Arguments:
@@ -1828,7 +1828,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 860335877}
-        m_TargetAssemblyTypeName: com.nmd.nkl.text.TextEffect, com.nmd.nkl.20.text
+        m_TargetAssemblyTypeName: com.mjgame.nmd.nkl.TextEffect, com.mjgame.nmd.nkl.20
         m_MethodName: Play
         m_Mode: 1
         m_Arguments:
@@ -1840,7 +1840,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1163937770}
-        m_TargetAssemblyTypeName: com.nmd.nkl.text.TextEffect, com.nmd.nkl.20.text
+        m_TargetAssemblyTypeName: com.mjgame.nmd.nkl.TextEffect, com.mjgame.nmd.nkl.20
         m_MethodName: Play
         m_Mode: 1
         m_Arguments:
@@ -1852,7 +1852,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1272049177}
-        m_TargetAssemblyTypeName: com.nmd.nkl.text.TextEffect, com.nmd.nkl.20.text
+        m_TargetAssemblyTypeName: com.mjgame.nmd.nkl.TextEffect, com.mjgame.nmd.nkl.20
         m_MethodName: Play
         m_Mode: 1
         m_Arguments:
@@ -2968,7 +2968,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 860335877}
-        m_TargetAssemblyTypeName: com.nmd.nkl.text.TypewriterEffect, com.nmd.nkl.20.text
+        m_TargetAssemblyTypeName: com.mjgame.nmd.nkl.TypewriterEffect, com.mjgame.nmd.nkl.20
         m_MethodName: Skip
         m_Mode: 1
         m_Arguments:
@@ -3771,7 +3771,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 555718029}
-        m_TargetAssemblyTypeName: com.nmd.nkl.text.TextCounter, com.nmd.nkl.20.text
+        m_TargetAssemblyTypeName: com.mjgame.nmd.nkl.TextCounter, com.mjgame.nmd.nkl.20
         m_MethodName: Add
         m_Mode: 3
         m_Arguments:

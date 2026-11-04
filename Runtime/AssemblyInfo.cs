@@ -1,4 +1,4 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("com.nmd.nkl.20.text.Editor")]
-[assembly: InternalsVisibleTo("com.nmd.nkl.20.text.Tests")]
+[assembly: InternalsVisibleTo("com.mjgame.nmd.nkl.20.Editor")]
+[assembly: InternalsVisibleTo("com.mjgame.nmd.nkl.20.Tests")]

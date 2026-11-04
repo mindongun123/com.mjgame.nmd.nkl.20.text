@@ -1,11 +1,11 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>Characters rock left and right around their center. Loops forever. Tag args: a (or =), s, d.</summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Wobble")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Wobble")]
     public sealed class WobbleEffect : TextEffect
     {
         [Tooltip("Max rotation, in degrees.")]

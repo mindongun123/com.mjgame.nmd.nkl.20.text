@@ -1,14 +1,14 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Flashes the text towards a color (e.g. red when the player cannot afford an item,
     /// white when a value increases). Plays once over <see cref="duration"/>, or loops when it is 0.
     /// </summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Color Flash")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Color Flash")]
     public sealed class ColorFlashEffect : TextEffect
     {
         public override string DefaultTag => "flash";

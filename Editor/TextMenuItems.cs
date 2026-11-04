@@ -2,12 +2,12 @@ using TMPro;
 using UnityEditor;
 using UnityEngine;
 
-namespace com.nmd.nkl.text.editor
+namespace com.mjgame.nmd.nkl.editor
 {
     /// <summary>GameObject menu entries that create TMP texts already wired with package components.</summary>
     static class TextMenuItems
     {
-        const string Root = "GameObject/com.nmd.nkl/Text/";
+        const string Root = "GameObject/com.mjgame.nmd.nkl/Text/";
 
         [MenuItem(Root + "Title (Bounce In)", false, 11)]
         static void CreateTitle(MenuCommand command) => Create(command, "Title", go =>

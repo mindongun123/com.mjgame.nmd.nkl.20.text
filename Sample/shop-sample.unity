@@ -1635,7 +1635,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1102518201}
-        m_TargetAssemblyTypeName: com.nmd.nkl.text.sample.ShopSample, com.nmd.nkl.20.text.Sample
+        m_TargetAssemblyTypeName: com.mjgame.nmd.nkl.sample.ShopSample, com.mjgame.nmd.nkl.20.Sample
         m_MethodName: Open
         m_Mode: 1
         m_Arguments:
@@ -2352,7 +2352,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1102518201}
-        m_TargetAssemblyTypeName: com.nmd.nkl.text.sample.ShopSample, com.nmd.nkl.20.text.Sample
+        m_TargetAssemblyTypeName: com.mjgame.nmd.nkl.sample.ShopSample, com.mjgame.nmd.nkl.20.Sample
         m_MethodName: AddCoins
         m_Mode: 3
         m_Arguments:

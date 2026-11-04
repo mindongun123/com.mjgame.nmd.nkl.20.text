@@ -1,11 +1,11 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>Characters fade in one after another, optionally sliding in. Plays once.</summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Fade In")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Fade In")]
     public sealed class FadeInEffect : TextEffect
     {
         public override string DefaultTag => "fade";

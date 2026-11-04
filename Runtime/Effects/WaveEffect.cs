@@ -1,11 +1,11 @@
 using TMPro;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>Characters float up and down in a sine wave. Loops forever. Tag args: a (or =), s, d.</summary>
     [ExecuteAlways]
-    [AddComponentMenu("com.nmd.nkl/Text/Effects/Wave")]
+    [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Wave")]
     public sealed class WaveEffect : TextEffect
     {
         [Tooltip("Height of the wave, in text units.")]

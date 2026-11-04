@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace com.nmd.nkl.text.editor
+namespace com.mjgame.nmd.nkl.editor
 {
     /// <summary>
     /// Shows only the gradient that is actually used: the preset's (editable in place) when a preset is

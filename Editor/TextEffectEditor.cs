@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace com.nmd.nkl.text.editor
+namespace com.mjgame.nmd.nkl.editor
 {
     /// <summary>Adds Play / Stop (and Skip for the typewriter) to every effect, also usable in edit mode.</summary>
     [CustomEditor(typeof(TextEffect), true)]

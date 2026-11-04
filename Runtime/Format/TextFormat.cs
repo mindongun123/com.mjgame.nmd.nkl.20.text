@@ -1,6 +1,6 @@
 using System;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     public enum TimeFormat
     {

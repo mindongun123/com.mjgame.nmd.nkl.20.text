@@ -3,7 +3,7 @@ using TMPro;
 using UnityEditor;
 using UnityEngine;
 
-namespace com.nmd.nkl.text.tests
+namespace com.mjgame.nmd.nkl.tests
 {
     /// <summary>Edit-mode tests of the components on real TMP texts.</summary>
     public class TextComponentTests

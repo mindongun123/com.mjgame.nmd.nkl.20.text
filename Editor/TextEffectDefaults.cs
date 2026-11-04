@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace com.nmd.nkl.text.editor
+namespace com.mjgame.nmd.nkl.editor
 {
     /// <summary>
     /// An effect added in the inspector starts with its built-in tag (Wave → "wave"), so it only animates

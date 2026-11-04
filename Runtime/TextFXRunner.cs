@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Unity.Profiling;
 using UnityEngine;
 
-namespace com.nmd.nkl.text
+namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Single update loop for the <see cref="TextFX"/> that are currently playing an effect.
