@@ -8,6 +8,7 @@ namespace com.mjgame.nmd.nkl
     [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Wobble")]
     public sealed class WobbleEffect : TextEffect
     {
+        public override TMP_VertexDataUpdateFlags Modifies => TMP_VertexDataUpdateFlags.Vertices;
         [Tooltip("Max rotation, in degrees.")]
         public float angle = 10f;
         [Tooltip("Radians per second.")]

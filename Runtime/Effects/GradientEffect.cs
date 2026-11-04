@@ -12,6 +12,7 @@ namespace com.mjgame.nmd.nkl
     [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Gradient")]
     public sealed class GradientEffect : TextEffect
     {
+        public override TMP_VertexDataUpdateFlags Modifies => TMP_VertexDataUpdateFlags.Colors32;
         public enum Direction
         {
             /// <summary>Left to right.</summary>
@@ -147,13 +148,13 @@ namespace com.mjgame.nmd.nkl
             g.SetKeys(
                 new[]
                 {
-                    new GradientColorKey(new Color(1f, 0.25f, 0.25f), 0f),
-                    new GradientColorKey(new Color(1f, 0.9f, 0.2f), 1f / 6f),
-                    new GradientColorKey(new Color(0.3f, 1f, 0.35f), 2f / 6f),
-                    new GradientColorKey(new Color(0.25f, 0.95f, 1f), 3f / 6f),
-                    new GradientColorKey(new Color(0.3f, 0.45f, 1f), 4f / 6f),
-                    new GradientColorKey(new Color(1f, 0.35f, 1f), 5f / 6f),
-                    new GradientColorKey(new Color(1f, 0.25f, 0.25f), 1f),
+                    new GradientColorKey(new Color(1f, 0f, 0f), 0f),
+                    new GradientColorKey(new Color(1f, 1f, 0f), 1f / 6f),
+                    new GradientColorKey(new Color(0f, 1f, 0f), 2f / 6f),
+                    new GradientColorKey(new Color(0f, 1f, 1f), 3f / 6f),
+                    new GradientColorKey(new Color(0f, 0f, 1f), 4f / 6f),
+                    new GradientColorKey(new Color(1f, 0f, 1f), 5f / 6f),
+                    new GradientColorKey(new Color(1f, 0f, 0f), 1f),
                 },
                 new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) });
             return g;
@@ -177,7 +178,7 @@ namespace com.mjgame.nmd.nkl
                 for (int c = range.x; c < range.y; c++, n++)
                 {
                     if (!IsDrawable(info, c)) continue;
-                    TMP_CharacterInfo ch = info.characterInfo[c];
+                    ref readonly TMP_CharacterInfo ch = ref info.characterInfo[c];
                     Vector3[] v = info.meshInfo[ch.materialReferenceIndex].vertices;
                     Color32[] colors = info.meshInfo[ch.materialReferenceIndex].colors32;
                     int i = ch.vertexIndex;
@@ -234,7 +235,7 @@ namespace com.mjgame.nmd.nkl
                 for (int c = range.x; c < range.y; c++)
                 {
                     if (!IsDrawable(info, c)) continue;
-                    TMP_CharacterInfo ch = info.characterInfo[c];
+                    ref readonly TMP_CharacterInfo ch = ref info.characterInfo[c];
                     Vector3[] v = info.meshInfo[ch.materialReferenceIndex].vertices;
                     for (int k = 0; k < 4; k++)
                     {

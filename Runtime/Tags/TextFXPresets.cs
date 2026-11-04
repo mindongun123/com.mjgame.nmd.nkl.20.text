@@ -17,19 +17,22 @@ namespace com.mjgame.nmd.nkl
     public static class TextFXPresets
     {
         /// <summary>Resources path of the optional presets prefab: a GameObject holding configured effects.</summary>
-        public const string ResourcePath = "NKL/TextFXPresets";
+        public const string ResourcePath = "TextFXPresets";
 
         internal readonly struct Entry
         {
             public readonly string Name;
             public readonly Type Type;
             public readonly TextEffect Template;
+            /// <summary>Template settings serialized once, so creating a tag effect does not re-serialize.</summary>
+            public readonly string Json;
 
             public Entry(string name, Type type, TextEffect template)
             {
                 Name = name;
                 Type = type;
                 Template = template;
+                Json = template != null ? JsonUtility.ToJson(template) : null;
             }
         }
 
@@ -61,6 +64,16 @@ namespace com.mjgame.nmd.nkl
                 throw new ArgumentException("Not a concrete TextEffect type.", nameof(effectType));
             EnsureLoaded();
             Add(new Entry(tag.ToLowerInvariant(), effectType, template));
+        }
+
+        /// <summary>
+        /// Loads the presets prefab and the settings asset now (e.g. on a loading screen), so the first
+        /// text using a built-in tag does not hitch on Resources.Load.
+        /// </summary>
+        public static void Prewarm()
+        {
+            EnsureLoaded();
+            _ = TextFXSettings.Instance;
         }
 
         /// <summary>Reloads the presets (after editing the presets prefab).</summary>

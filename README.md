@@ -1,11 +1,12 @@
-# NKL Text — `com.mjgame.nmd.nkl.20`
+# MJGame Text — `com.mjgame.nmd.nkl.20`
 
 Bộ công cụ chữ cho UI game mobile, xây trên **TextMeshPro**: hiệu ứng, màu/gradient, định dạng số và thời gian không tạo GC, typewriter, số chạy.
-Package không thay thế TMP mà chạy bên trên nó, nên vẫn giữ được batching, font fallback, đa ngôn ngữ và tooling của Unity. Mọi thứ đều là component hoặc extension, gắn vào `TextMeshProUGUI` có sẵn là dùng được.
+Package không thay thế TMP mà chạy bên trên nó, nên vẫn giữ được batching, font fallback, đa ngôn ngữ và tooling của Unity. Mọi thứ đều là component hoặc extension, gắn vào `TextMeshProUGUI` (UI) hoặc `TextMeshPro` (text 3D trên object) có sẵn là dùng được.
 
 - Unity 2022.3+, TextMeshPro 3.0.7
 - Namespace: `com.mjgame.nmd.nkl`
 - Menu: **Add Component › com.mjgame.nmd.nkl › Text**, **GameObject › com.mjgame.nmd.nkl › Text**
+- Settings: **Tools › com.mjgame.nmd.nkl › Text › Settings...**
 - Lịch sử thay đổi: [CHANGELOG.md](CHANGELOG.md)
 
 ---
@@ -15,7 +16,7 @@ Package không thay thế TMP mà chạy bên trên nó, nên vẫn giữ đư�
 2. [Bắt đầu nhanh](#bắt-đầu-nhanh)
 3. [Định dạng số và thời gian (zero-GC)](#định-dạng-số-và-thời-gian-zero-gc)
 4. [Font, màu, preset: dùng gì của TMP](#font-màu-preset-dùng-gì-của-tmp)
-5. [Effect](#effect) · [Màu sắc](#màu-sắc)
+5. [Effect](#effect) · [Settings: text UI và text 3D](#settings-text-ui-và-text-3d) · [Màu sắc](#màu-sắc)
 6. [Tag: effect cho một đoạn chữ](#tag-effect-cho-một-đoạn-chữ)
 7. [Typewriter](#typewriter)
 8. [TextCounter](#textcounter)
@@ -42,6 +43,7 @@ Package không thay thế TMP mà chạy bên trên nó, nên vẫn giữ đư�
 | Hội thoại, tutorial | `TypewriterEffect` + tag | Chỉ trong lúc gõ |
 | Nhấn mạnh liên tục (HOT, SALE, phần thưởng lớn) | `Wave`, `Pulse`, `Rainbow`... + sub-Canvas | Mỗi frame; dùng cho ít text |
 | Title kiểu cartoon dày | `TextExtrude` | +1 mesh, +1 drawcall |
+| Chữ trên object (tên NPC, số damage) | `TextMeshPro` + `TextFX`, xem [Settings](#settings-text-ui-và-text-3d) | Như text UI |
 
 ---
 
@@ -119,14 +121,14 @@ Package chỉ thêm những **cấu hình riêng** mà TMP không có:
 | Component | Mô tả | Kiểu chạy | Tham số chính |
 |---|---|---|---|
 | `WaveEffect` | Chữ lượn sóng | Lặp | `amplitude`, `speed`, `spacing` |
-| `ShakeEffect` | Chữ rung | Lặp, hoặc dừng sau `duration` | `amplitude`, `rate`, `duration` |
+| `ShakeEffect` | Chữ rung | Lặp, hoặc dừng sau `duration` | `amplitude`, `rate`, `duration`, `falloff` (biên độ giảm dần ở đoạn cuối) |
 | `PulseEffect` | Chữ phóng to/thu nhỏ theo nhịp | Lặp | `amount`, `speed`, `spacing` |
 | `WobbleEffect` | Chữ lắc quanh tâm | Lặp | `angle`, `speed`, `spacing` |
 | `RainbowEffect` | Chữ đổi màu theo vòng màu | Lặp (tĩnh khi `speed = 0`) | `speed`, `spacing`, `saturation`, `mix` |
 | `GradientEffect` | Gradient nhiều màu, nhiều hướng | Tĩnh, hoặc lặp khi cuộn | xem [Màu sắc](#màu-sắc) |
-| `ColorFlashEffect` | Nhấp nháy về một màu | Một lần, hoặc lặp khi `duration = 0` | `color`, `strength`, `rate`, `duration`, `charDelay` |
-| `BounceInEffect` | Chữ nảy vào lần lượt | Một lần | `charDelay`, `charDuration`, `overshoot`, `rise` |
-| `FadeInEffect` | Chữ hiện mờ dần và trượt vào | Một lần | `charDelay`, `charDuration`, `slide` |
+| `ColorFlashEffect` | Nhấp nháy về một màu | Một lần, hoặc lặp khi `duration = 0` | `color`, `strength`, `rate`, `duration`, `charDelay`, `skipSpaces` |
+| `BounceInEffect` | Chữ nảy vào lần lượt | Một lần | `charDelay`, `charDuration`, `overshoot`, `rise`, `skipSpaces` |
+| `FadeInEffect` | Chữ hiện mờ dần và trượt vào | Một lần | `charDelay`, `charDuration`, `slide`, `skipSpaces` |
 | `TypewriterEffect` | Gõ từng chữ | Một lần | xem [Typewriter](#typewriter) |
 
 Trường chung:
@@ -134,6 +136,21 @@ Trường chung:
 - `Play On Enable`: tự chạy khi object được bật (chỉ trong Play mode).
 
 Có thể gắn nhiều effect trên cùng một text, chúng chồng lên nhau (ví dụ Bounce In + Wave). Effect một lần tự dừng khi chạy xong; gọi `Play()` để chạy lại.
+
+### Settings: text UI và text 3D
+Mở **Tools › com.mjgame.nmd.nkl › Text › Settings...** Cửa sổ này có:
+
+| Setting | Mặc định | Ý nghĩa |
+|---|---|---|
+| Auto Preview | Bật | Effect tự chạy trong Edit mode. Lưu theo máy của từng người |
+| UI uses Time.timeScale | Tắt | Text UI (`TextMeshProUGUI`) vẫn chạy khi pause game |
+| World uses Time.timeScale | Bật | Text 3D (`TextMeshPro` trên object) dừng khi pause game |
+| UI × / World × | 1 / 0.1 | Hệ số nhân cho khoảng cách: biên độ Wave/Shake, `rise` của Bounce, `slide` của Fade |
+| Max updates / second | 0 | Số lần cập nhật effect tối đa mỗi giây khi Play. 0 = mỗi frame. Đặt 30 cho mobile để giảm khoảng một nửa CPU của effect lặp; tốc độ animation không đổi |
+
+Nút **Reset to Defaults** ở cuối cửa sổ đưa mọi setting về giá trị mặc định trong bảng trên.
+
+TMP dựng text 3D nhỏ hơn text UI 10 lần ở cùng font size, nên hệ số ×0.1 giúp cùng thông số trông giống nhau trên cả hai loại. Asset có sẵn trong package ở `Runtime/Resources/TextFXSettings.asset` và có tác dụng cả trong build. Cửa sổ Settings sửa thẳng asset này. Nếu asset bị xóa, package dùng giá trị mặc định, và nút **Create Settings Asset** sẽ tạo lại ở chỗ cũ. Khi package cài từ registry hoặc git (chỉ đọc), nút sẽ tạo ở `Assets/Resources/`. Từ code có thể dùng `TextFXSettings.Set(asset)`.
 
 ---
 
@@ -153,7 +170,7 @@ Text chỉ cần có `TextFX`. Các tag sau **chạy ngay mà không cần thêm
 <gold>HUYỀN THOẠI</gold> giảm <shake=3>50%</shake> · <wave a=12>Nhận ngay</wave>
 ```
 
-**Thông số mặc định của cả game** nằm trong prefab `Runtime/Resources/NKL/TextFXPresets`. Mở prefab, chỉnh effect có Tag tương ứng (ví dụ Wave `wave` đổi `amplitude`), rồi lưu. Thêm tag mới cũng làm ở đây: add một effect và đặt Tag mới, ví dụ GradientEffect với Tag `vip` thì dùng được `<vip>`. Có thể thay prefab bằng `TextFXPresets.SetPresets(prefab)`, hoặc đăng ký từ code bằng `TextFXPresets.Register("tag", typeof(MyEffect))`.
+**Thông số mặc định của cả game** nằm trong prefab `Runtime/Resources/TextFXPresets`. Mở prefab, chỉnh effect có Tag tương ứng (ví dụ Wave `wave` đổi `amplitude`), rồi lưu. Thêm tag mới cũng làm ở đây: add một effect và đặt Tag mới, ví dụ GradientEffect với Tag `vip` thì dùng được `<vip>`. Có thể thay prefab bằng `TextFXPresets.SetPresets(prefab)`, hoặc đăng ký từ code bằng `TextFXPresets.Register("tag", typeof(MyEffect))`.
 
 **Chỉnh riêng một item**: add effect vào text đó, giữ Tag trùng tên (`wave`) rồi sửa thông số. Effect gắn tay **thắng** tag dựng sẵn, chỉ trên text đó. Muốn chỉnh một đoạn nhỏ thì dùng [tham số trong tag](#tham-số-trong-tag): `<wave a=3>`.
 
@@ -183,6 +200,11 @@ Mỗi đoạn có thể có tham số riêng, ghi đè giá trị trên componen
 | Pulse | `a` mức phóng to | `s`, `d` |
 | Wobble | `a` góc | `s`, `d` |
 | Rainbow | `s` tốc độ | `d`, `mix` |
+| Flash | `c` màu (`red`, `#ff0000`) | `r` số lần/giây, `d` độ trễ giữa các chữ, `a` độ mạnh |
+| Bounce | `h` độ cao nảy | `d` độ trễ, `t` thời gian mỗi chữ, `o` độ vọt |
+| Fade | `d` độ trễ | `t` thời gian mỗi chữ, `x`, `y` khoảng trượt |
+
+Gradient không nhận tham số trong tag (khung bao và chế độ tĩnh tính trên cả đoạn): muốn màu khác thì dùng tag preset như `<gold>`, `<fire>`, hoặc thêm preset mới trong `TextFXPresets`.
 
 Giá trị có thể đặt trong ngoặc: `<wave a="10">`. Số dùng dấu chấm thập phân (`0.5`).
 
@@ -224,7 +246,8 @@ Có 4 lớp tô màu, từ rẻ nhất đến linh hoạt nhất. Có thể kế
 | `repeat`, `offset`, `wrap` | Gradient lặp bao nhiêu lần trên toàn text, dịch vị trí, kiểu lặp `Repeat` / `PingPong` / `Clamp` |
 | `scrollSpeed` | Số vòng gradient mỗi giây, có thể âm. **0 = tĩnh: không tốn chi phí mỗi frame và hiện luôn trong Edit mode** |
 | `blend`, `amount` | `Replace` / `Multiply` (giữ màu sẵn có, chỉ phủ thêm sắc) / `Add` (tạo vệt sáng), độ mạnh 0..1 |
-| `useGradientAlpha` | Nhân alpha của chữ với alpha của gradient (chữ mờ dần ở một đầu) || `Tag` | Chỉ tô một đoạn, ví dụ `Nhận <grad>1000 vàng</grad>` |
+| `useGradientAlpha` | Nhân alpha của chữ với alpha của gradient (chữ mờ dần ở một đầu) |
+| `Tag` | Chỉ tô một đoạn, ví dụ `Nhận <grad>1000 vàng</grad>` |
 
 Gradient được tính theo **khung bao của đoạn chữ bị ảnh hưởng**. Vì vậy với `repeat = 1`, gradient trải đúng một lần từ đầu đến cuối đoạn đó, dù chữ dài hay ngắn và cỡ chữ bao nhiêu.
 
@@ -349,12 +372,12 @@ Xem `Sample/ShopSample.unity` và `Sample/Scripts/`.
 ## Hiệu năng
 
 ### Đo trong sample shop (Unity Editor, 210 text có `TextFX`)
-| Trạng thái | Text trong vòng update | `NKL.TextFX.Tick` |
+| Trạng thái | Text trong vòng update | `MJGame.TextFX.Tick` |
 |---|---|---|
 | Đứng yên (chỉ 10 huy hiệu HOT đang lặp) | 10 / 210 | ~0.2–0.3 ms/frame |
 | Ngay sau khi bấm Open (100 item nảy vào cùng lúc) | 112 / 210 | chỉ trong ~0.5 s, sau đó về lại 10 |
 
-Số liệu đo trong Editor, nơi có thêm chi phí debug; trên build thật sẽ nhẹ hơn. Nên đo lại trên thiết bị đích bằng Profiler (marker `NKL.TextFX.Tick`).
+Số liệu đo trong Editor, nơi có thêm chi phí debug; trên build thật sẽ nhẹ hơn. Nên đo lại trên thiết bị đích bằng Profiler (marker `MJGame.TextFX.Tick`).
 
 ### Vì sao nhẹ
 | | |
@@ -365,6 +388,10 @@ Số liệu đo trong Editor, nơi có thêm chi phí debug; trên build thật 
 | **Không GC** | Effect, counter và formatter đều không cấp phát bộ nhớ mỗi frame. |
 | **Copy tối thiểu** | Chỉ copy phần vertex đang dùng. |
 | **Một listener cho cả game** | Một `TextChangeDispatcher` duy nhất nghe event đổi text của TMP rồi chuyển tới đúng `TextFX` đang theo dõi text đó. 200 text dùng gradient tĩnh không làm mỗi lần đổi chữ tốn thêm 200 callback. |
+| **Bỏ qua text đang khuất** | Khi Play, text chỉ chạy effect lặp (wave, rainbow...) sẽ không được cập nhật nếu Canvas tắt, `CanvasGroup` alpha = 0, bị `RectMask2D` che (trượt khỏi ScrollRect) hoặc là text 3D ngoài camera. Effect chạy một lần (typewriter, fade-in) vẫn chạy để xong đúng giờ. Tắt bằng `TextFX.CullHiddenTexts = false`. `Mask` (stencil) không che theo kiểu này, nên dùng `RectMask2D` cho list dài. |
+| **Chỉ upload phần bị đổi** | Mỗi effect khai báo `Modifies` (vị trí, màu hoặc cả hai). Wave/Shake chỉ gửi vị trí, Rainbow/Gradient chỉ gửi màu. |
+| **Tham số tag parse một lần** | `<wave a=10>` được đổi sang số/màu khi text dựng lại, mỗi frame chỉ tra mảng. |
+| **Prewarm** | Gọi `TextFXPresets.Prewarm()` ở màn loading để nạp sẵn preset và settings, tránh giật lần đầu một tag xuất hiện. |
 | **LUT cho gradient** | Gradient được lấy mẫu sẵn 128 điểm; mỗi vertex chỉ tra bảng thay vì gọi `Gradient.Evaluate`. Gán gradient hay preset mới được nhận tự động; sửa key bằng code thì gọi `RefreshGradient()`. |
 
 ### Chi phí còn lại
@@ -404,15 +431,23 @@ public sealed class SwingEffect : TextEffect
 ```
 Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gốc.
 - Helper: `Offset`, `Scale`, `Rotate`, `MultiplyAlpha`, `TintColor`, `CharacterIndexAt`, `Time`, `AffectedCount`.
+- Khoảng cách nhân với `UnitScale` để chạy đúng trên cả text UI và text 3D: `Offset(info, c, Vector3.up * height * UnitScale)`.
 - Hook: `OnPlay()`, `OnTextRebuilt()`.
+- Effect chỉ sửa vị trí hoặc chỉ sửa màu thì override `Modifies` (ví dụ `=> TMP_VertexDataUpdateFlags.Vertices`) để giảm dữ liệu gửi lên mỗi frame. Không override thì mặc định là cả hai.
 
 ---
 
 ## API
 
-**`TextFX`**: `Text`, `IsPlaying`, `IsAwake`, `PlayAll()`, `StopAll()`, `ResetAll()`, `AddFollower()`, `RemoveFollower()`, `Reparse()`
+**`TextFX`**: `Text`, `IsPlaying`, `IsAwake`, `PlayAll()`, `StopAll()`, `ResetAll()`, `AddFollower()`, `RemoveFollower()`, `Reparse()`, `CullHiddenTexts`
 
-**`TextEffect`**: `Play()`, `Stop()`, `IsPlaying`, `IsLooping`, `TagName`
+**`TextEffect`**: `Play()`, `Stop()`, `IsPlaying`, `IsLooping`, `IsAnimated`, `Modifies`, `TagName`, `AutoPreview`; cho effect tự viết: `UnitScale`, `GetRangeArgs()`
+
+**`TextFXSettings`**: `Instance`, `Set()`, `IsWorld()`, `UsesTimeScale()`, `UnitScale()`
+
+**`TextFXPresets`**: `Register()`, `SetPresets()`, `Reload()`, `Prewarm()`
+
+**`TagArgs`**: `Parse()`, `TryGet()`, `GetFloat()`, `GetColor()`
 
 **`TypewriterEffect`**: `Show(string)`, `Skip()`, `IsComplete`, `onCharacterRevealed`, `onComplete`
 
@@ -427,7 +462,7 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 ---
 
 ## Test
-**Window › General › Test Runner › EditMode** › `com.mjgame.nmd.nkl.20.Tests`: 72 test, gồm
+**Window › General › Test Runner › EditMode** › `com.mjgame.nmd.nkl.20.Tests`: 84 test, gồm
 - định dạng số, rút gọn, thời gian, phần trăm, kể cả các giá trị biên (`long.MinValue`/`MaxValue`, số âm, NaN);
 - tag: gỡ khỏi chữ, lồng nhau, tham số, `<nofx>` (tất cả / theo tên), tag lạ, hoa thường;
 - icon: được tô như chữ, `<nofx>` giữ màu gốc;
@@ -436,6 +471,8 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 - vòng đời effect: thức/ngủ, khôi phục mesh, `ResetAll`, effect một lần tự kết thúc;
 - typewriter: ẩn chữ, `Skip`, event;
 - gradient tĩnh / cuộn, từng chữ, blend, color flash;
+- Pulse, Wobble, Rainbow, Fade In, Shake có `duration`, `skipSpaces`, tham số tag của Flash/Bounce, đọc màu từ tag;
+- text 3D: hệ số khoảng cách ×0.1, chọn timeScale theo loại text;
 - counter, extension method.
 
 ---
@@ -447,6 +484,9 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 - Preview trong Edit mode không lưu vào scene. Thoát preview hoặc reload script thì text trở về bình thường.
 - `TMPTextExtensions` dùng buffer tĩnh: chỉ gọi trên main thread (giống TMP).
 - Text rất dài với effect lặp vẫn tốn CPU theo số ký tự.
+- Mọi text không phải `TextMeshProUGUI` đều được coi là text 3D (hệ số và timeScale của World).
+- Text 3D ngoài tầm camera vẫn chạy effect nếu effect đang chạy; nên dừng effect khi object bị ẩn hoặc trả về pool.
+- `GradientEffect` không nhận tham số trong tag; dùng tag preset (`<gold>`...) thay thế.
 
 ---
 

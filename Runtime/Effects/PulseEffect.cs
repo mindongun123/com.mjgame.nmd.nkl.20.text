@@ -8,6 +8,7 @@ namespace com.mjgame.nmd.nkl
     [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Pulse")]
     public sealed class PulseEffect : TextEffect
     {
+        public override TMP_VertexDataUpdateFlags Modifies => TMP_VertexDataUpdateFlags.Vertices;
         [Tooltip("Extra scale at the peak (0.15 = 115%).")]
         public float amount = 0.15f;
         [Tooltip("Radians per second.")]

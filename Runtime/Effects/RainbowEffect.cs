@@ -11,6 +11,7 @@ namespace com.mjgame.nmd.nkl
     [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Rainbow")]
     public sealed class RainbowEffect : TextEffect
     {
+        public override TMP_VertexDataUpdateFlags Modifies => TMP_VertexDataUpdateFlags.Colors32;
         [Tooltip("Hue cycles per second.")]
         public float speed = 0.5f;
         [Tooltip("Hue difference between neighbouring characters (0..1).")]

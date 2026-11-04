@@ -8,6 +8,7 @@ namespace com.mjgame.nmd.nkl
     [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Wave")]
     public sealed class WaveEffect : TextEffect
     {
+        public override TMP_VertexDataUpdateFlags Modifies => TMP_VertexDataUpdateFlags.Vertices;
         [Tooltip("Height of the wave, in text units.")]
         public float amplitude = 6f;
         [Tooltip("Radians per second.")]
@@ -19,13 +20,14 @@ namespace com.mjgame.nmd.nkl
 
         protected override bool Apply(TMP_TextInfo info)
         {
+            float unit = UnitScale;
             int n = 0;
             for (int r = 0; r < RangeCount; r++)
             {
                 Vector2Int range = GetRange(r);
                 // <wave=10> or <wave a=10 s=2 d=0.3>
                 TagArgs args = GetRangeArgs(r);
-                float amp = args.GetFloat("a", "", amplitude);
+                float amp = args.GetFloat("a", "", amplitude) * unit;
                 float spd = args.GetFloat("s", speed);
                 float dens = args.GetFloat("d", spacing);
                 for (int c = range.x; c < range.y; c++, n++)

@@ -651,5 +651,249 @@ namespace com.mjgame.nmd.nkl.tests
             fx.OnTextChanged(text);
             Assert.IsTrue(fx.IsInUpdateLoop);
         }
+
+        static Vector3 Vertex(TMP_Text text, int charIndex, int corner)
+        {
+            TMP_CharacterInfo c = text.textInfo.characterInfo[charIndex];
+            return text.textInfo.meshInfo[c.materialReferenceIndex].vertices[c.vertexIndex + corner];
+        }
+
+        static float Width(TMP_Text text, int charIndex) => Vertex(text, charIndex, 2).x - Vertex(text, charIndex, 0).x;
+
+        [Test]
+        public void Pulse_ScalesCharacters_AndStopRestores()
+        {
+            TextMeshProUGUI text = CreateText("Pulse");
+            var pulse = text.gameObject.AddComponent<PulseEffect>();
+            pulse.amount = 0.5f;
+            pulse.speed = Mathf.PI / 2f;
+            pulse.spacing = 0f;
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+            float width = Width(text, 0);
+
+            pulse.Play();
+            fx.Tick(1f); // sin(π/2) = 1 → scale 1.5
+            Assert.AreEqual(width * 1.5f, Width(text, 0), 0.01f);
+
+            pulse.Stop();
+            fx.Tick(0f);
+            Assert.AreEqual(width, Width(text, 0), 0.01f);
+        }
+
+        [Test]
+        public void Wobble_RotatesAroundCenter()
+        {
+            TextMeshProUGUI text = CreateText("W");
+            var wobble = text.gameObject.AddComponent<WobbleEffect>();
+            wobble.angle = 90f;
+            wobble.speed = Mathf.PI / 2f;
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+            Vector3 center = (Vertex(text, 0, 0) + Vertex(text, 0, 2)) * 0.5f;
+            Vector3 corner = Vertex(text, 0, 0);
+
+            wobble.Play();
+            fx.Tick(1f); // 90°
+            Vector3 rotated = Vertex(text, 0, 0);
+            Vector3 newCenter = (Vertex(text, 0, 0) + Vertex(text, 0, 2)) * 0.5f;
+            Assert.AreEqual(center.x, newCenter.x, 0.01f, "rotates around its own center");
+            Assert.AreEqual(center.y, newCenter.y, 0.01f);
+            Assert.AreEqual((corner - center).magnitude, (rotated - center).magnitude, 0.01f);
+            Assert.Greater((rotated - corner).magnitude, 0.01f);
+        }
+
+        [Test]
+        public void Rainbow_TintsCharacters_StaticWhenSpeedIsZero()
+        {
+            TextMeshProUGUI text = CreateText("RGB");
+            text.color = Color.white;
+            var rainbow = text.gameObject.AddComponent<RainbowEffect>();
+            rainbow.speed = 0f;
+            rainbow.spacing = 0f; // hue 0 = red
+            rainbow.saturation = 1f;
+            Assert.IsFalse(rainbow.IsAnimated);
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+
+            rainbow.Play();
+            fx.Tick(0f);
+            Color32 c = VertexColor(text, 0, 0);
+            Assert.AreEqual(255, c.r);
+            Assert.Less(c.g, 5);
+            Assert.Less(c.b, 5);
+        }
+
+        [Test]
+        public void FadeIn_StartsHidden_EndsVisible_AndFinishes()
+        {
+            TextMeshProUGUI text = CreateText("Fade");
+            var fade = text.gameObject.AddComponent<FadeInEffect>();
+            fade.charDelay = 0.1f;
+            fade.charDuration = 0.2f;
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+
+            fade.Play();
+            fx.Tick(0f);
+            Assert.AreEqual(0, VertexColor(text, 0, 0).a);
+            Assert.AreEqual(0, VertexColor(text, 3, 0).a);
+
+            fx.Tick(0.25f);
+            Assert.AreEqual(255, VertexColor(text, 0, 0).a, "first character done");
+            Assert.Less(VertexColor(text, 3, 0).a, 255, "last character still fading");
+
+            fx.Tick(1f);
+            Assert.IsFalse(fade.IsPlaying);
+            fx.Tick(0f);
+            Assert.AreEqual(255, VertexColor(text, 3, 0).a);
+        }
+
+        [Test]
+        public void Shake_WithDuration_CalmsDownAndStops()
+        {
+            TextMeshProUGUI text = CreateText("Shake");
+            var shake = text.gameObject.AddComponent<ShakeEffect>();
+            shake.amplitude = 10f;
+            shake.duration = 1f;
+            shake.falloff = 1f; // amplitude decreases linearly over the whole duration
+            Assert.IsFalse(shake.IsLooping);
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+            Vector3 original = Vertex(text, 0, 0);
+
+            shake.Play();
+            fx.Tick(0.9f); // 10% of the amplitude left
+            Assert.LessOrEqual(Mathf.Abs(Vertex(text, 0, 0).x - original.x), 1.01f);
+            Assert.IsTrue(shake.IsPlaying);
+
+            fx.Tick(0.2f);
+            Assert.IsFalse(shake.IsPlaying);
+            fx.Tick(0f);
+            Assert.AreEqual(original.x, Vertex(text, 0, 0).x, 0.001f);
+            Assert.AreEqual(original.y, Vertex(text, 0, 0).y, 0.001f);
+        }
+
+        [Test]
+        public void SkipSpaces_SpacesDoNotDelayTheNextCharacter()
+        {
+            TextMeshProUGUI text = CreateText("A B");
+            var fade = text.gameObject.AddComponent<FadeInEffect>();
+            fade.charDelay = 1f;
+            fade.charDuration = 1f;
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+
+            fade.Play();
+            fx.Tick(1.5f); // "B" is the 2nd visible character: starts at 1 s, half faded
+            Assert.AreEqual(128, VertexColor(text, 2, 0).a, 2);
+
+            fade.skipSpaces = false;
+            fade.Play();
+            fx.Tick(1.5f); // counted as the 3rd character: starts at 2 s
+            Assert.AreEqual(0, VertexColor(text, 2, 0).a);
+        }
+
+        [Test]
+        public void TagArgs_ParseColors()
+        {
+            Assert.AreEqual(Color.red, TagArgs.Parse("=red").GetColor("c", "", Color.white));
+            Assert.AreEqual(Color.green, TagArgs.Parse("c=#00ff00").GetColor("c", "", Color.white));
+            Assert.AreEqual(Color.white, TagArgs.Parse("c=nope").GetColor("c", "", Color.white), "fallback");
+        }
+
+        [Test]
+        public void ColorFlash_TagColor_OverridesComponentColor()
+        {
+            TextMeshProUGUI text = CreateText("");
+            text.color = Color.white;
+            var flash = text.gameObject.AddComponent<ColorFlashEffect>();
+            SetTag(flash, "flash");
+            flash.color = Color.black;
+            flash.rate = 1f;
+            flash.duration = 1f;
+            text.text = "<flash>A</flash><flash=#0000ff>B</flash>";
+            text.ForceMeshUpdate(false, true);
+            var fx = text.GetComponent<TextFX>();
+
+            flash.Play();
+            fx.Tick(0.5f); // peak
+            Color32 a = VertexColor(text, 0, 0);
+            Color32 b = VertexColor(text, 1, 0);
+            Assert.Less(a.b, 10, "component color: black");
+            Assert.Less(b.r, 10);
+            Assert.AreEqual(255, b.b, 1, "tag color: blue");
+        }
+
+        [Test]
+        public void BounceIn_TagDelay_ChangesTiming()
+        {
+            TextMeshProUGUI text = CreateText("");
+            var bounce = text.gameObject.AddComponent<BounceInEffect>();
+            SetTag(bounce, "bounce");
+            bounce.charDelay = 0f;
+            bounce.charDuration = 1f;
+            text.text = "<bounce d=10>AB</bounce>";
+            text.ForceMeshUpdate(false, true);
+            var fx = text.GetComponent<TextFX>();
+
+            bounce.Play();
+            fx.Tick(2f);
+            Assert.AreEqual(255, VertexColor(text, 0, 0).a, "A done");
+            Assert.AreEqual(0, VertexColor(text, 1, 0).a, "B waits 10 s");
+            Assert.IsTrue(bounce.IsPlaying, "the end time uses the tag delay");
+        }
+
+        static float WaveOffset(TMP_Text text)
+        {
+            var wave = text.gameObject.AddComponent<WaveEffect>();
+            wave.amplitude = 10f;
+            wave.speed = Mathf.PI / 2f;
+            text.ForceMeshUpdate();
+            float original = Vertex(text, 0, 0).y;
+            wave.Play();
+            text.GetComponent<TextFX>().Tick(1f); // sin(π/2) = 1 → full amplitude
+            return Vertex(text, 0, 0).y - original;
+        }
+
+        [Test]
+        public void UnitScale_WorldTextUsesWorldMultiplier()
+        {
+            var settings = ScriptableObject.CreateInstance<TextFXSettings>();
+            settings.uiUnitScale = 1f;
+            settings.worldUnitScale = 0.1f;
+            TextFXSettings.Set(settings);
+            try
+            {
+                var world = new GameObject("WorldText");
+                world.transform.SetParent(_canvas.transform, false);
+                var tmp = world.AddComponent<TextMeshPro>();
+                tmp.text = "World";
+                Assert.IsTrue(TextFXSettings.IsWorld(tmp));
+                Assert.AreEqual(1f, WaveOffset(tmp), 0.01f, "10 × 0.1");
+
+                Assert.AreEqual(10f, WaveOffset(CreateText("UI")), 0.01f, "10 × 1");
+            }
+            finally
+            {
+                TextFXSettings.Set(null);
+                Object.DestroyImmediate(settings);
+            }
+        }
+
+        [Test]
+        public void TimeScale_ChosenPerTextKind()
+        {
+            var settings = ScriptableObject.CreateInstance<TextFXSettings>();
+            settings.uiUseTimeScale = false;
+            settings.worldUseTimeScale = true;
+            var go = new GameObject("WorldText");
+            go.transform.SetParent(_canvas.transform, false);
+            var world = go.AddComponent<TextMeshPro>();
+
+            Assert.IsTrue(settings.UsesTimeScale(world));
+            Assert.IsFalse(settings.UsesTimeScale(CreateText("UI")));
+            Object.DestroyImmediate(settings);
+        }
     }
 }

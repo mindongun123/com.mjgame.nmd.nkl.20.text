@@ -44,6 +44,7 @@ namespace com.mjgame.nmd.nkl
         bool _modified;
         bool _ticking;
         int _textVersion;
+        TMP_VertexDataUpdateFlags _uploaded; // channels changed by the last tick: must be uploaded again to restore
 
         public TMP_Text Text => _text != null ? _text : (_text = GetComponent<TMP_Text>());
 
@@ -239,6 +240,7 @@ namespace com.mjgame.nmd.nkl
         {
             if (!_modified) return;
             _modified = false;
+            _uploaded = TMP_VertexDataUpdateFlags.None;
 
             TMP_TextInfo info = Text.textInfo;
             if (_sourceDirty || info == null)
@@ -307,6 +309,11 @@ namespace com.mjgame.nmd.nkl
             if (info == null || info.meshInfo == null || info.characterInfo == null ||
                 info.characterInfo.Length < info.characterCount) return playing;
 
+            // Hidden text running only looping effects: skip the work, it resumes when visible again.
+            // One-shot effects (typewriter, fade-in...) keep running so they still finish on time.
+            if (playing && CullHiddenTexts && Application.isPlaying && !_sourceDirty && OnlyLoopingAnimated() && !IsVisible())
+                return true;
+
             _ticking = true;
             try
             {
@@ -315,6 +322,7 @@ namespace com.mjgame.nmd.nkl
                 // vertex buffer means the cached source is stale.
                 if (!_sourceDirty && !_source.Matches(info)) _sourceDirty = true;
 
+                bool rebuilt = _sourceDirty;
                 if (_sourceDirty)
                 {
                     _source.Capture(info);
@@ -323,13 +331,21 @@ namespace com.mjgame.nmd.nkl
                 }
                 _source.Restore(info);
 
+                TMP_VertexDataUpdateFlags flags = TMP_VertexDataUpdateFlags.None;
                 for (int i = 0; i < _effects.Count; i++)
                 {
                     TextEffect effect = _effects[i];
-                    if (effect != null && effect.IsPlaying) effect.Step(info, deltaTime, _textVersion);
+                    if (effect == null || !effect.IsPlaying) continue;
+                    effect.Step(info, deltaTime, _textVersion);
+                    flags |= effect.Modifies;
                 }
 
-                Text.UpdateVertexData(TMP_VertexDataUpdateFlags.Vertices | TMP_VertexDataUpdateFlags.Colors32);
+                // A fresh mesh is not uploaded yet in our state: send everything once.
+                TMP_VertexDataUpdateFlags upload = rebuilt
+                    ? TMP_VertexDataUpdateFlags.Vertices | TMP_VertexDataUpdateFlags.Colors32
+                    : flags | _uploaded;
+                _uploaded = flags;
+                if (upload != TMP_VertexDataUpdateFlags.None) Text.UpdateVertexData(upload);
                 for (int i = 0; i < _followers.Count; i++) ApplyToFollower(_followers[i], info);
             }
             finally
@@ -348,6 +364,37 @@ namespace com.mjgame.nmd.nkl
                 TextFXRunner.Add(this);
             }
             return playing;
+        }
+
+        /// <summary>
+        /// Play mode only: skip ticking texts that cannot be seen (canvas disabled, CanvasGroup alpha 0,
+        /// culled by RectMask2D, world text off camera) while they only play looping effects.
+        /// </summary>
+        public static bool CullHiddenTexts = true;
+
+        Renderer _renderer;
+
+        bool OnlyLoopingAnimated()
+        {
+            for (int i = 0; i < _effects.Count; i++)
+            {
+                TextEffect effect = _effects[i];
+                if (effect != null && effect.IsPlaying && effect.IsAnimated && !effect.IsLooping) return false;
+            }
+            return true;
+        }
+
+        bool IsVisible()
+        {
+            if (Text is TextMeshProUGUI ui)
+            {
+                Canvas canvas = ui.canvas;
+                if (canvas == null || !canvas.isActiveAndEnabled) return false;
+                CanvasRenderer cr = ui.canvasRenderer;
+                return !cr.cull && cr.GetInheritedAlpha() > 0f;
+            }
+            if (_renderer == null) _renderer = Text.GetComponent<Renderer>();
+            return _renderer == null || _renderer.isVisible;
         }
 
         void ApplyToFollower(Follower follower, TMP_TextInfo info)
@@ -544,7 +591,7 @@ namespace com.mjgame.nmd.nkl
         TextEffect CreateAutoEffect(in TextFXPresets.Entry entry)
         {
             var effect = (TextEffect)gameObject.AddComponent(entry.Type);
-            if (entry.Template != null) JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(entry.Template), effect);
+            if (entry.Json != null) JsonUtility.FromJsonOverwrite(entry.Json, effect);
             effect.MakeAuto(entry.Name);
             return effect;
         }

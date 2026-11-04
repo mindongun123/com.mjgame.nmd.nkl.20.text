@@ -53,6 +53,13 @@ namespace com.mjgame.nmd.nkl
         /// </summary>
         public virtual bool IsAnimated => true;
 
+        /// <summary>
+        /// Mesh channels this effect writes. Override to Vertices or Colors32 only, so TMP uploads just
+        /// that channel (about half the upload for move-only or color-only effects).
+        /// </summary>
+        public virtual TMP_VertexDataUpdateFlags Modifies =>
+            TMP_VertexDataUpdateFlags.Vertices | TMP_VertexDataUpdateFlags.Colors32;
+
         public TextFX Fx => _fx != null ? _fx : (_fx = GetComponent<TextFX>());
 
         /// <summary>Seconds since <see cref="Play"/> (unscaled).</summary>
@@ -61,6 +68,12 @@ namespace com.mjgame.nmd.nkl
         /// <summary>Number of affected ranges; each range is [x, y) in character indices.</summary>
         protected int RangeCount => _ranges.Count;
         protected Vector2Int GetRange(int index) => _ranges[index];
+
+        /// <summary>
+        /// Multiply distances (offsets, amplitudes) by this, so the same settings look the same on UI and
+        /// world texts: 1 for UI, 0.1 for world texts by default (<see cref="TextFXSettings"/>).
+        /// </summary>
+        protected float UnitScale => TextFXSettings.Instance.UnitScale(Fx.Text);
 
         /// <summary>Total number of affected characters (visible or not).</summary>
         protected int AffectedCount => _affectedCount;
@@ -116,7 +129,7 @@ namespace com.mjgame.nmd.nkl
 
         /// <summary>
         /// Edit mode only: effects with Play On Enable also play outside Play mode, so the scene and prefab
-        /// views show them animated. Toggle in Tools › com.mjgame.nmd.nkl › Text › Auto Preview (on by default).
+        /// views show them animated. Toggle in Tools › com.mjgame.nmd.nkl › Text › Settings (on by default).
         /// </summary>
         public static bool AutoPreview
         {
@@ -307,7 +320,7 @@ namespace com.mjgame.nmd.nkl
         protected static bool IsDrawable(TMP_TextInfo info, int charIndex)
         {
             if (charIndex >= info.characterCount || charIndex >= info.characterInfo.Length) return false;
-            TMP_CharacterInfo c = info.characterInfo[charIndex];
+            ref readonly TMP_CharacterInfo c = ref info.characterInfo[charIndex];
             if (!c.isVisible || c.materialReferenceIndex >= info.meshInfo.Length) return false;
             TMP_MeshInfo mesh = info.meshInfo[c.materialReferenceIndex];
             return mesh.vertices != null && mesh.colors32 != null &&
@@ -316,7 +329,7 @@ namespace com.mjgame.nmd.nkl
 
         protected static void Offset(TMP_TextInfo info, int charIndex, Vector3 delta)
         {
-            TMP_CharacterInfo c = info.characterInfo[charIndex];
+            ref readonly TMP_CharacterInfo c = ref info.characterInfo[charIndex];
             Vector3[] v = info.meshInfo[c.materialReferenceIndex].vertices;
             int i = c.vertexIndex;
             v[i] += delta;
@@ -328,7 +341,7 @@ namespace com.mjgame.nmd.nkl
         /// <summary>Scales a character around its own center.</summary>
         protected static void Scale(TMP_TextInfo info, int charIndex, float scale)
         {
-            TMP_CharacterInfo c = info.characterInfo[charIndex];
+            ref readonly TMP_CharacterInfo c = ref info.characterInfo[charIndex];
             Vector3[] v = info.meshInfo[c.materialReferenceIndex].vertices;
             int i = c.vertexIndex;
             Vector3 center = (v[i] + v[i + 2]) * 0.5f;
@@ -341,20 +354,22 @@ namespace com.mjgame.nmd.nkl
         /// <summary>Rotates a character around its own center, in degrees.</summary>
         protected static void Rotate(TMP_TextInfo info, int charIndex, float degrees)
         {
-            TMP_CharacterInfo c = info.characterInfo[charIndex];
+            ref readonly TMP_CharacterInfo c = ref info.characterInfo[charIndex];
             Vector3[] v = info.meshInfo[c.materialReferenceIndex].vertices;
             int i = c.vertexIndex;
             Vector3 center = (v[i] + v[i + 2]) * 0.5f;
-            Quaternion rotation = Quaternion.Euler(0f, 0f, degrees);
-            v[i] = center + rotation * (v[i] - center);
-            v[i + 1] = center + rotation * (v[i + 1] - center);
-            v[i + 2] = center + rotation * (v[i + 2] - center);
-            v[i + 3] = center + rotation * (v[i + 3] - center);
+            float rad = degrees * Mathf.Deg2Rad;
+            float cos = Mathf.Cos(rad), sin = Mathf.Sin(rad);
+            for (int k = 0; k < 4; k++)
+            {
+                Vector3 d = v[i + k] - center;
+                v[i + k] = new Vector3(center.x + d.x * cos - d.y * sin, center.y + d.x * sin + d.y * cos, v[i + k].z);
+            }
         }
 
         protected static void MultiplyAlpha(TMP_TextInfo info, int charIndex, float alpha)
         {
-            TMP_CharacterInfo c = info.characterInfo[charIndex];
+            ref readonly TMP_CharacterInfo c = ref info.characterInfo[charIndex];
             Color32[] colors = info.meshInfo[c.materialReferenceIndex].colors32;
             int i = c.vertexIndex;
             for (int k = 0; k < 4; k++)
@@ -364,7 +379,7 @@ namespace com.mjgame.nmd.nkl
         /// <summary>Blends the RGB of a character towards <paramref name="color"/>, keeping its alpha.</summary>
         protected static void TintColor(TMP_TextInfo info, int charIndex, Color32 color, float amount)
         {
-            TMP_CharacterInfo c = info.characterInfo[charIndex];
+            ref readonly TMP_CharacterInfo c = ref info.characterInfo[charIndex];
             Color32[] colors = info.meshInfo[c.materialReferenceIndex].colors32;
             int i = c.vertexIndex;
             for (int k = 0; k < 4; k++)

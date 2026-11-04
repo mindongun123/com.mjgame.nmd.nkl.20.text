@@ -20,6 +20,7 @@ namespace com.mjgame.nmd.nkl
     [AddComponentMenu("com.mjgame.nmd.nkl/Text/Effects/Typewriter")]
     public sealed class TypewriterEffect : TextEffect
     {
+        public override TMP_VertexDataUpdateFlags Modifies => TMP_VertexDataUpdateFlags.Colors32;
         // Reveals the whole text by default.
         public override string DefaultTag => "";
 

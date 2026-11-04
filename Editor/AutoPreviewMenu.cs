@@ -1,31 +1,21 @@
-using UnityEditor;
 using UnityEngine;
 
 namespace com.mjgame.nmd.nkl.editor
 {
-    /// <summary>Tools › com.mjgame.nmd.nkl › Text › Auto Preview: play effects in edit mode without pressing Preview.</summary>
+    /// <summary>Auto Preview (toggled in the Settings window): play effects in edit mode without pressing Preview.</summary>
     static class AutoPreviewMenu
     {
-        const string MenuPath = "Tools/com.mjgame.nmd.nkl/Text/Auto Preview";
-
-        [MenuItem(MenuPath)]
-        static void Toggle()
+        /// <summary>Changes the setting and starts/stops the effects already in the open scenes.</summary>
+        internal static void Set(bool on)
         {
-            TextEffect.AutoPreview = !TextEffect.AutoPreview;
+            TextEffect.AutoPreview = on;
             if (Application.isPlaying) return;
             foreach (TextEffect effect in Object.FindObjectsOfType<TextEffect>())
             {
                 if (!effect.IsAnimated || !effect.isActiveAndEnabled || effect is TypewriterEffect) continue;
-                if (TextEffect.AutoPreview) { if (effect.PlayOnEnable) effect.Play(); }
+                if (on) { if (effect.PlayOnEnable) effect.Play(); }
                 else effect.Stop();
             }
-        }
-
-        [MenuItem(MenuPath, true)]
-        static bool Validate()
-        {
-            Menu.SetChecked(MenuPath, TextEffect.AutoPreview);
-            return true;
         }
     }
 }

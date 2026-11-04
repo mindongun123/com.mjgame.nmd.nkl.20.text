@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using UnityEngine;
 
 namespace com.mjgame.nmd.nkl
 {
@@ -40,11 +41,33 @@ namespace com.mjgame.nmd.nkl
 
         readonly string[] _keys;
         readonly string[] _values;
+        // Parsed once here, so effects can read args every frame without string parsing.
+        readonly float[] _floats;
+        readonly bool[] _hasFloat;
+        readonly Color[] _colors;
+        readonly bool[] _hasColor;
 
         TagArgs(string[] keys, string[] values)
         {
             _keys = keys;
             _values = values;
+            int n = keys.Length;
+            _floats = new float[n];
+            _hasFloat = new bool[n];
+            _colors = new Color[n];
+            _hasColor = new bool[n];
+            for (int i = 0; i < n; i++)
+            {
+                _hasFloat[i] = float.TryParse(values[i], NumberStyles.Float, CultureInfo.InvariantCulture, out _floats[i]);
+                _hasColor[i] = ColorUtility.TryParseHtmlString(values[i], out _colors[i]);
+            }
+        }
+
+        int IndexOf(string key)
+        {
+            for (int i = 0; i < _keys.Length; i++)
+                if (string.Equals(_keys[i], key, StringComparison.OrdinalIgnoreCase)) return i;
+            return -1;
         }
 
         public int Count => _keys.Length;
@@ -98,14 +121,23 @@ namespace com.mjgame.nmd.nkl
 
         public float GetFloat(string key, float fallback)
         {
-            return TryGet(key, out string value) &&
-                   float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result)
-                ? result
-                : fallback;
+            int i = IndexOf(key);
+            return i >= 0 && _hasFloat[i] ? _floats[i] : fallback;
         }
 
         /// <summary>First of the keys that is present, else <paramref name="fallback"/>.</summary>
         public float GetFloat(string key, string alias, float fallback) =>
             GetFloat(key, GetFloat(alias, fallback));
+
+        /// <summary>HTML color ("red", "#ff0000", "#f00c") of <paramref name="key"/>, else <paramref name="fallback"/>.</summary>
+        public Color GetColor(string key, Color fallback)
+        {
+            int i = IndexOf(key);
+            return i >= 0 && _hasColor[i] ? _colors[i] : fallback;
+        }
+
+        /// <summary>First of the keys that is present, else <paramref name="fallback"/>.</summary>
+        public Color GetColor(string key, string alias, Color fallback) =>
+            GetColor(key, GetColor(alias, fallback));
     }
 }
