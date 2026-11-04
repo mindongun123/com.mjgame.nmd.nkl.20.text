@@ -1,0 +1,23 @@
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.swp
+
+# Generated if the package is opened as a standalone project
+Library/
+Temp/
+Logs/
+obj/
+UserSettings/
+*.csproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tools
+.claude/
