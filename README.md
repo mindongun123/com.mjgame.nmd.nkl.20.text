@@ -140,17 +140,17 @@ Trường chung:
 Có thể gắn nhiều effect trên cùng một text, chúng chồng lên nhau (ví dụ Bounce In + Wave). Effect một lần tự dừng khi chạy xong; gọi `Play()` để chạy lại.
 
 ### Settings: text UI và text 3D
-Mở **Tools › com.mjgame.nmd.nkl › Text › Settings...** Cửa sổ này có:
+Mở **Tools › com.mjgame.nmd.nkl › Text › Settings...** Cửa sổ chia thành các mục:
 
-| Setting | Mặc định | Ý nghĩa |
-|---|---|---|
-| Auto Preview | Bật | Effect tự chạy trong Edit mode. Lưu theo máy của từng người |
-| UI uses Time.timeScale | Tắt | Text UI (`TextMeshProUGUI`) vẫn chạy khi pause game |
-| World uses Time.timeScale | Bật | Text 3D (`TextMeshPro` trên object) dừng khi pause game |
-| UI × / World × | 1 / 0.1 | Hệ số nhân cho khoảng cách: biên độ Wave/Shake, `rise` của Bounce, `slide` của Fade |
-| Max updates / second | 0 | Số lần cập nhật effect tối đa mỗi giây khi Play. 0 = mỗi frame. Đặt 30 cho mobile để giảm khoảng một nửa CPU của effect lặp; tốc độ animation không đổi |
-| Motion strength | 1 | Độ mạnh của chuyển động: biên độ Wave/Shake, góc Wobble, mức phóng Pulse, độ nảy của Bounce, khoảng trượt của Fade. 0 = không chuyển động (màu và độ mờ vẫn chạy) |
-| Per quality level | trống | Ghi đè Motion strength và Max updates / second cho từng mức trong **Project Settings › Quality**, ví dụ mức Low: motion 0.5, 30 lần/giây |
+| Mục | Setting | Mặc định | Ý nghĩa |
+|---|---|---|---|
+| Editor | Auto Preview | Bật | Effect tự chạy trong Edit mode. Lưu theo máy của từng người |
+| Pause | UI texts | Tắt | Text UI (`TextMeshProUGUI`) có dừng khi `Time.timeScale = 0` không. Tắt = vẫn chạy trong menu pause |
+| Pause | World texts (3D) | Bật | Text 3D (`TextMeshPro` trên object) dừng khi pause game |
+| Performance | Update rate | Every frame | Số lần vẽ lại effect lặp (wave, rainbow, shine…) mỗi giây khi Play: Every frame, 60, 30, 20 hoặc 15. Game 60 fps đặt 30 thì effect vẫn mượt mà tốn khoảng một nửa CPU; tốc độ animation không đổi. Game đã chạy 30 fps thì để Every frame |
+| Distance scale | UI texts × / World texts × | 1 / 0.1 | Hệ số nhân cho khoảng cách: biên độ Wave/Shake, `rise` của Bounce, `slide` của Fade |
+| Motion | Strength | 1 | Độ mạnh của chuyển động: biên độ Wave/Shake, góc Wobble, mức phóng Pulse, độ nảy của Bounce, khoảng trượt của Fade. 0 = không chuyển động (màu và độ mờ vẫn chạy) |
+| Per quality level | Add quality level | trống | Ghi đè Motion strength và Update rate cho từng mức trong **Project Settings › Quality**, ví dụ mức Low: motion 0.5, 30 lần/giây |
 
 **Giảm chuyển động cho người chơi**: gắn với tuỳ chọn trong menu game, ví dụ `TextFXSettings.SetPlayerMotionScale(reduceMotion ? 0f : -1f)`. Giá trị này thắng cả asset lẫn mức chất lượng; truyền số âm để bỏ. Package không tự lưu, game tự lưu lựa chọn của người chơi (PlayerPrefs...) và gọi lại khi khởi động.
 
@@ -162,7 +162,7 @@ TMP dựng text 3D nhỏ hơn text UI 10 lần ở cùng font size, nên hệ s�
 
 ## Layout: chữ vòng cung, chữ uốn cong
 
-Đặt chữ theo một đường cong **cố định**: chỉ tính lại khi text đổi, mỗi frame không tốn gì. Thêm component vào text có `TextFX` (Inspector của `TextFX` có nút **Add Arc** / **Add Curve**), xem ngay trong Edit mode.
+Đặt chữ theo một đường cong **cố định**: chỉ tính lại khi text đổi, mỗi frame không tốn gì. Thêm component vào text có `TextFX` (Inspector của `TextFX`, nhóm **Layout**: Arc, Curve, Line), xem ngay trong Edit mode.
 
 | Component | Dùng cho | Thông số |
 |---|---|---|
@@ -394,7 +394,7 @@ Package được thiết kế để dùng cho danh sách hàng trăm item:
   ```
 - Item bị tắt rồi bật lại (`SetActive`) thì không cần làm gì: `Play On Enable` tự chạy lại, còn `OnDisable` tự trả mesh về gốc.
 
-Xem `Sample/ShopSample.unity` và `Sample/Scripts/`.
+Xem tab **Shop** trong [Sample](#sample) (`ShopSample.cs`, `ShopSampleItem.cs`).
 
 ---
 
@@ -524,15 +524,17 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 ---
 
 ## Sample
+Sample không nằm sẵn trong project: mở **Window › Package Manager**, chọn **MJGame Text**, tab **Samples**, bấm **Import** ở mục **Demo**. Unity chép sample vào `Assets/Samples/MJGame Text/<version>/Demo/`. Trong repo package, sample nằm ở `Samples~/Demo` (thư mục có `~` được Unity bỏ qua, nên không biên dịch vào project dùng package).
+
 | Scene | Nội dung |
 |---|---|
-| `Sample/sample.unity` | Một scene, ba tab ở cạnh dưới: **Effects**, **Layout** và **Shop** |
+| `sample.unity` | Một scene, ba tab ở cạnh dưới: **Effects**, **Layout** và **Shop** |
 | Tab Effects | Mọi effect, tag, typewriter, counter, extrude; nút Replay / Skip / +1234 |
 | Tab Layout | `ArcLayout` cong lên, cong xuống, vòng tròn 360°, nhiều dòng, kết hợp `<gold>`/`<wave>`; `CurveLayout` kiểu WordArt; Size Curve: phình giữa, vừa cong vừa phình, to dần trên đường nghiêng |
 | Tab Shop | Shop 100 item: giá rút gọn, mua hàng (rung khi thiếu tiền, nảy khi mua được), huy hiệu HOT trong sub-Canvas, coin đếm có animation, đồng hồ sale, nút Open |
 
 Tab bị ẩn thì tắt hẳn, nên text của nó rời vòng update. `SampleTabs` gọi `TextFXPresets.Prewarm()` khi scene mở. Shop chỉ tạo 100 item lần đầu mở tab Shop.
 
-`Sample/Gradients/` chứa 5 `TextGradient` mẫu (Fire, Ice, Gold, Rainbow, Toxic). Script sample nằm ở `Sample/Scripts/` (assembly `com.mjgame.nmd.nkl.20.Sample`).
+`Gradients/` chứa 5 `TextGradient` mẫu (Fire, Ice, Gold, Rainbow, Toxic). Script sample nằm ở `Scripts/` (assembly `com.mjgame.nmd.nkl.20.Sample`).
 
 > Sample chỉ dùng font trong `Runtime/Font` của package và UI mặc định của Unity, không phụ thuộc asset nào khác của project. Cần import TMP Essential Resources như mọi project dùng TextMeshPro.

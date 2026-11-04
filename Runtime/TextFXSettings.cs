@@ -11,13 +11,11 @@ namespace com.mjgame.nmd.nkl
     {
         public const string ResourcePath = "TextFXSettings";
 
-        [Header("Time")]
         [Tooltip("UI texts (TextMeshProUGUI) follow Time.timeScale: they stop when the game is paused. Off = unscaled time.")]
         public bool uiUseTimeScale;
         [Tooltip("World texts (TextMeshPro on objects) follow Time.timeScale: they stop when the game is paused.")]
         public bool worldUseTimeScale = true;
 
-        [Header("Distance scale")]
         [Tooltip("Multiplier of distances (wave amplitude, bounce rise, shake, fade slide) on UI texts.")]
         public float uiUnitScale = 1f;
         [Tooltip("Multiplier of distances on world texts. TMP builds world text 10x smaller than UI text " +
@@ -26,7 +24,6 @@ namespace com.mjgame.nmd.nkl
         [Tooltip("Max effect updates per second in play mode. 0 = every frame. 30 saves CPU/battery on mobile.")]
         [Min(0)] public int maxUpdatesPerSecond;
 
-        [Header("Motion")]
         [Tooltip("Strength of moving effects (wave, shake, wobble, pulse, bounce/fade movement). " +
                  "1 = full, 0 = no movement (colors and fades still play). For reduced-motion players.")]
         [Range(0f, 1f)] public float motionScale = 1f;

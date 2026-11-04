@@ -20,61 +20,92 @@ namespace com.mjgame.nmd.nkl.editor
 
             if (effects.Length == 0)
             {
-                EditorGUILayout.HelpBox("Write a built-in tag in the text (<wave>, <gold>...) or add an effect from " +
-                                        "Add Component > com.mjgame.nmd.nkl > Text > Effects.", MessageType.Info);
-                DrawAddButtons(fx, effects);
-                DrawRemoveButton(fx);
-                return;
+                EditorGUILayout.HelpBox("No effect yet. Write a built-in tag in the text (<wave>, <gold>, <shine>...) " +
+                                        "or add one below.", MessageType.Info);
             }
-
-            using (new EditorGUILayout.HorizontalScope())
+            else
             {
-                if (GUILayout.Button(Application.isPlaying ? "Play All" : "Preview All")) fx.PlayAll();
-                if (GUILayout.Button("Stop All")) fx.StopAll();
+                DrawEffectList(fx, effects);
+                if (fx.IsInUpdateLoop) Repaint(); // only while something animates
+                DrawCanvasWarning(fx, effects);
             }
 
-            foreach (TextEffect effect in effects)
-            {
-                string tag = string.IsNullOrEmpty(effect.TagName) ? "whole text" : "<" + effect.TagName + ">";
-                string state = effect.IsPlaying ? "playing" : "stopped";
-                if (effect.IsAuto) state += " (built-in tag)";
-                EditorGUILayout.LabelField(ObjectNames.NicifyVariableName(effect.GetType().Name), tag + ", " + state);
-            }
-            if (fx.IsInUpdateLoop) Repaint(); // only while something animates
-
-            DrawCanvasWarning(fx, effects);
+            GUILayout.Space(4f);
             DrawAddButtons(fx, effects);
+            GUILayout.Space(4f);
             DrawRemoveButton(fx);
         }
 
-        static readonly (string Label, System.Type Type)[] AddableEffects =
+        static GUIStyle _stateStyle;
+        static GUIStyle StateStyle => _stateStyle ??= new GUIStyle(EditorStyles.miniLabel) { alignment = TextAnchor.MiddleRight };
+
+        void DrawEffectList(TextFX fx, TextEffect[] effects)
         {
-            ("Wave", typeof(WaveEffect)), ("Shake", typeof(ShakeEffect)), ("Pulse", typeof(PulseEffect)),
-            ("Wobble", typeof(WobbleEffect)), ("Rainbow", typeof(RainbowEffect)), ("Flash", typeof(ColorFlashEffect)),
-            ("Bounce", typeof(BounceInEffect)), ("Fade", typeof(FadeInEffect)), ("Gradient", typeof(GradientEffect)), ("Shine", typeof(ShineEffect)),
-            ("Typewriter", typeof(TypewriterEffect)), ("Arc", typeof(ArcLayout)), ("Curve", typeof(CurveLayout)), ("Line", typeof(LineLayout)),
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField("Effects on this text", EditorStyles.boldLabel);
+                    if (GUILayout.Button(Application.isPlaying ? "Play All" : "Preview All", EditorStyles.miniButtonLeft, GUILayout.Width(80f))) fx.PlayAll();
+                    if (GUILayout.Button("Stop All", EditorStyles.miniButtonRight, GUILayout.Width(64f))) fx.StopAll();
+                }
+
+                foreach (TextEffect effect in effects)
+                {
+                    string name = ObjectNames.NicifyVariableName(effect.GetType().Name);
+                    string target = string.IsNullOrEmpty(effect.TagName) ? "whole text" : "<" + effect.TagName + ">";
+                    string state = effect is TextLayoutEffect ? "layout"
+                        : !effect.IsPlaying ? "stopped"
+                        : effect.IsAnimated ? "playing" : "applied";
+                    if (effect.IsAuto) state = "built-in tag · " + state;
+
+                    Rect row = EditorGUILayout.GetControlRect();
+                    float w = row.width;
+                    GUI.Label(new Rect(row.x, row.y, w * 0.42f, row.height), name);
+                    GUI.Label(new Rect(row.x + w * 0.42f, row.y, w * 0.28f, row.height), target, EditorStyles.miniLabel);
+                    using (new EditorGUI.DisabledScope(!effect.IsPlaying))
+                        GUI.Label(new Rect(row.x + w * 0.70f, row.y, w * 0.30f, row.height), state, StateStyle);
+                }
+            }
+        }
+
+        static readonly (string Group, (string Label, System.Type Type)[] Items)[] AddableEffects =
+        {
+            ("Motion", new[] { ("Wave", typeof(WaveEffect)), ("Shake", typeof(ShakeEffect)), ("Pulse", typeof(PulseEffect)), ("Wobble", typeof(WobbleEffect)) }),
+            ("Color", new[] { ("Gradient", typeof(GradientEffect)), ("Rainbow", typeof(RainbowEffect)), ("Flash", typeof(ColorFlashEffect)), ("Shine", typeof(ShineEffect)) }),
+            ("Appear", new[] { ("Bounce In", typeof(BounceInEffect)), ("Fade In", typeof(FadeInEffect)), ("Typewriter", typeof(TypewriterEffect)) }),
+            ("Layout", new[] { ("Arc", typeof(ArcLayout)), ("Curve", typeof(CurveLayout)), ("Line", typeof(LineLayout)) }),
         };
 
         // Adds an editable effect with its built-in tag: <wave> in this text then uses its values.
         static void DrawAddButtons(TextFX fx, TextEffect[] effects)
         {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Add effect (overrides the built-in tag on this text)", EditorStyles.miniBoldLabel);
-            const int perRow = 3;
-            for (int i = 0; i < AddableEffects.Length; i += perRow)
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                using (new EditorGUILayout.HorizontalScope())
+                EditorGUILayout.LabelField(new GUIContent("Add effect",
+                    "An effect added here overrides the built-in tag of the same name on this text only."), EditorStyles.boldLabel);
+
+                const int columns = 4;
+                foreach (var (group, items) in AddableEffects)
                 {
-                    for (int j = i; j < i + perRow && j < AddableEffects.Length; j++)
+                    Rect line = EditorGUILayout.GetControlRect();
+                    float labelWidth = 58f;
+                    GUI.Label(new Rect(line.x, line.y, labelWidth, line.height), group, EditorStyles.miniBoldLabel);
+                    float cell = (line.width - labelWidth) / columns;
+                    for (int i = 0; i < items.Length; i++)
                     {
-                        (string label, System.Type type) = AddableEffects[j];
-                        using (new EditorGUI.DisabledScope(HasManual(effects, type)))
-                            if (GUILayout.Button("Add " + label)) AddEffect(fx, type);
+                        (string label, System.Type type) = items[i];
+                        var rect = new Rect(line.x + labelWidth + i * cell, line.y, cell - 2f, line.height);
+                        bool exists = HasManual(effects, type);
+                        using (new EditorGUI.DisabledScope(exists))
+                        {
+                            var content = new GUIContent(label, exists ? "Already on this text." : "Add " + label);
+                            if (GUI.Button(rect, content, EditorStyles.miniButton)) AddEffect(fx, type);
+                        }
                     }
                 }
             }
         }
-
         static bool HasManual(TextEffect[] effects, System.Type type)
         {
             foreach (TextEffect effect in effects)
@@ -100,8 +131,11 @@ namespace com.mjgame.nmd.nkl.editor
         // Unity refuses to remove TextFX while effects require it, including the hidden built-in tag ones.
         static void DrawRemoveButton(TextFX fx)
         {
-            EditorGUILayout.Space();
-            if (!GUILayout.Button("Remove Text FX and its effects")) return;
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUILayout.FlexibleSpace();
+                if (!GUILayout.Button(new GUIContent("Remove Text FX", "Removes Text FX and all its effects, including hidden built-in tag ones."), EditorStyles.miniButton, GUILayout.Width(120f))) return;
+            }
             RemoveWithEffects(fx);
             GUIUtility.ExitGUI();
         }

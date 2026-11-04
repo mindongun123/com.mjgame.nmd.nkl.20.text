@@ -5,11 +5,18 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-05
+
 ### Added
 - Layout tĩnh `ArcLayout` (cong lên/xuống, vòng tròn 360°; kích thước theo góc hoặc theo bán kính cố định) và `CurveLayout` (uốn theo `AnimationCurve`), trên lớp nền `TextLayoutEffect` để viết layout riêng. Chỉ tính lại khi text đổi; chữ nhiều dòng trên vòng cung nằm trên các vòng tròn đồng tâm nên không bị dồn.
 - Size Curve cho mọi layout: kích thước từng chữ theo vị trí trong câu (ví dụ to dần vào giữa), căn theo chân, giữa hoặc đỉnh (Align); Keep Spacing giãn khoảng cách theo kích thước mới. `LineLayout`: đường thẳng có thể nghiêng, để dùng Size Curve trên chữ thẳng.
 - `TextEffect.Order`: effect có Order nhỏ chạy trước. Layout dùng -100 nên Wave, Shake, Gradient áp lên chữ đã uốn.
 - Inspector của `TextFX` có nút Add Arc / Add Curve / Add Line. Sample có thêm tab **Layout**.
+
+### Changed
+- Sample chuyển từ `Sample/` sang `Samples~/Demo` và được khai báo trong `package.json`: import qua **Package Manager › MJGame Text › Samples › Demo**. Project dùng package không còn tự biên dịch code sample.
+- Cửa sổ Settings được trình bày lại: mỗi mục có khung và một dòng giải thích, nhãn không còn bị cắt, bỏ tiêu đề bị lặp. **Max updates / second** đổi thành ô chọn **Update rate** (Every frame, 60, 30, 20, 15 lần/giây). Per quality level có giao diện riêng: chọn mức Quality theo tên, nút Add và Remove.
+- Inspector của `TextFX` được trình bày lại: danh sách effect nằm trong khung (tên, áp cho đâu, trạng thái), có Preview All / Stop All ngay trên tiêu đề. Các nút Add chia theo nhóm Motion / Color / Appear / Layout, độ rộng đều nhau. Nút Remove Text FX nhỏ lại và nằm ở góc phải.
 
 ### Fixed
 - Editor bị lag và báo "Invalid editor window of type: UnityEditor.CurveEditorWindow" khi kéo curve hoặc slider của effect. Mỗi bước kéo từng bắt TMP dựng lại cả text. Giờ các thay đổi được gộp thành một lần cập nhật mỗi frame, và text chỉ được parse lại khi đổi Tag.

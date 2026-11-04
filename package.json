@@ -1,6 +1,6 @@
 {
   "name": "com.mjgame.nmd.nkl.20",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "displayName": "MJGame Text",
   "description": "Text effects, styles and helpers built on top of TextMeshPro. Effects edit vertex data only, so text is never regenerated per frame.",
   "unity": "2022.3",
@@ -17,5 +17,12 @@
   },
   "dependencies": {
     "com.unity.textmeshpro": "3.0.7"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Demo",
+      "description": "One scene with three tabs: every effect and tag, layouts (arc, curve, size curve) and a 100-item shop. Needs TMP Essential Resources.",
+      "path": "Samples~/Demo"
+    }
+  ]
 }
