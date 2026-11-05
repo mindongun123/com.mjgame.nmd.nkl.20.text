@@ -379,17 +379,19 @@ fadeOut.Stop();      // hiện lại
 ```csharp
 var coins = GetComponent<TextCounter>();
 coins.SetValue(1000);   // nhảy thẳng tới giá trị, không animation
-coins.Add(250);         // đếm lên 1250 (gọi được từ UnityEvent với tham số int)
+coins.Add(250);         // đếm lên 1250 (gọi được từ UnityEvent với tham số int/float)
 coins.CountTo(99999);
+coins.SetValue(0.199);  // số lẻ: Value/Target là double
 coins.Complete();       // kết thúc ngay
 ```
 
 | Trường | |
 |---|---|
-| `display` | `Number` (`1,250`), `Abbreviated` (`1.2M`), `Time` (giá trị là giây: `02:05`) |
+| `display` | `Number` (`1058.6`), `Abbreviated` (`1.9k`), `Time` (giá trị là giây: `02:05`) |
 | `prefix` / `suffix` | Ví dụ `"$ "` |
-| `separator` | Để trống = không phân cách hàng nghìn |
-| `abbreviateFrom`, `abbreviateDecimals` | Cho chế độ `Abbreviated` |
+| `decimals` | Số chữ số lẻ tối đa, dùng chung cho `Number` và `Abbreviated`; cắt xuống, bỏ số 0 ở cuối (`0.199`, `2.5`, `199`) |
+| `separator` | Dấu thập phân (mặc định `.`, để trống cũng là `.`). Không phân cách hàng nghìn. Đặt `,` để ra `1058,6`, `1,9k` |
+| `abbreviateFrom` | Cho chế độ `Abbreviated` |
 | `timeFormat` | Cho chế độ `Time` |
 | `duration` | Thời gian đếm (ease-out, unscaled time) |
 
@@ -403,6 +405,14 @@ Chỉ render lại khi số hiển thị thay đổi; không tạo GC.
 2. Nhấn chuột phải vào component › **Create Extrude Layer**.
 
 Lớp khối nằm phía sau, tự đồng bộ chữ, font, cỡ, căn lề và vị trí. Nếu text có `TextFX`, lớp khối cũng chạy theo effect.
+
+| Trường | |
+|---|---|
+| `offset` | Độ lệch của lớp khối, đơn vị UI (mặc định `(0, -9)`). Text 3D nhân thêm World distance scale của `TextFXSettings` |
+| `color` | Màu lớp khối |
+| `worldDepth` | Chỉ text 3D: lớp khối lùi ra sau theo Z, `sortingOrder` nhỏ hơn chữ chính 1 |
+
+Không sửa trực tiếp object `_Extrude`: mọi thay đổi bị ghi đè ở lần đồng bộ sau.
 
 ---
 
@@ -511,7 +521,7 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 
 **`TypewriterEffect`**: `Show(string)`, `Skip()`, `IsComplete`, `onCharacterRevealed`, `onComplete`
 
-**`TextCounter`**: `Value`, `Target`, `IsCounting`, `SetValue()`, `CountTo()`, `Add(int|long)`, `Complete()`, `onComplete`
+**`TextCounter`**: `Value`, `Target`, `IsCounting`, `SetValue(double)`, `CountTo(double)`, `Add(int|long|float|double)`, `Complete()`, `onComplete`
 
 **`GradientEffect`**: `ActiveGradient`, `CreateRainbow()`; **`TextGradient`**: `gradient`
 
@@ -552,7 +562,7 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 ---
 
 ## Sample
-Sample không nằm sẵn trong project: mở **Window › Package Manager**, chọn **MJGame Text**, tab **Samples**, bấm **Import** ở mục **Demo**. Unity chép sample vào `Assets/Samples/MJGame Text/<version>/Demo/`. Trong repo package, sample nằm ở `Samples/Demo`, nên Unity cũng biên dịch script sample (assembly `com.mjgame.nmd.nkl.20.Sample`) trong project cài package.
+Sample không nằm sẵn trong project: mở **Window › Package Manager**, chọn **MJGame Text**, tab **Samples**, bấm **Import** ở mục **Demo**. Unity chép sample vào `Assets/Samples/MJGame Text/<version>/Demo/`. Trong repo package, sample nằm ở `Samples~/Demo` (thư mục có `~` bị Unity bỏ qua), nên project cài package không biên dịch script sample cho tới khi import.
 
 | Scene | Nội dung |
 |---|---|
