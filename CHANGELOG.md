@@ -5,6 +5,8 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-05
+
 ### Added
 - Dấu thập phân: tham số `decimalPoint` cho `WriteAbbreviated`/`WriteDecimal`/`WritePercent` và `SetAbbreviated`/`SetDecimal`/`SetPercent` (mặc định `.`); `TextFormat.WriteTrimmed`: số lẻ tối đa N chữ số, cắt xuống, bỏ số 0 ở cuối (`0.199`, `2.5`, `199`).
 - `TextCounter` nhận số lẻ: giá trị là `double` (`SetValue(0.199)`, `Add(0.05f)`), một ô **Decimals** dùng chung cho số ghi đầy đủ (`58,77`) và số rút gọn (`1,9k`), thay cho `abbreviateDecimals` (giá trị cũ được tự chuyển sang; thuộc tính `abbreviateDecimals` vẫn dùng được nhưng đã đánh dấu Obsolete). Chỉ còn một ô `separator`: ở Abbreviated là dấu duy nhất, dùng làm dấu thập phân, không phân cách hàng nghìn (`,` → `$0,199`, `199$`, `1,9k`); ở Number cũng vậy: ghi đầy đủ, không chia nhóm hàng nghìn (`1058,6`, `19999999999`). Giá trị cũ trong scene/prefab được giữ nguyên. **Thay đổi hành vi**: với `separator` mặc định `,`, Abbreviated ra `15,3k` thay vì `15.3k` (đặt `.` để giữ kiểu cũ); `Value`/`Target` giờ là `double`.
