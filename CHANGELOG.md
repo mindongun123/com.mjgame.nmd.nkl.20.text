@@ -19,7 +19,7 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 - `TextExtrude` trên text 3D: `offset` nhân với hệ số World (trước đây lệch 9 đơn vị), lớp extrude lùi ra sau theo Z (`worldDepth`) và có `sortingOrder` nhỏ hơn chữ chính. Trước đây nhánh xử lý text 3D không bao giờ chạy, vì `TextMeshPro` cũng có `RectTransform`.
 
 ### Changed
-- Sample chuyển từ `Samples~/Demo` về `Samples/Demo` (`package.json` cập nhật theo), nên script sample được biên dịch cả trong project cài package.
+- Sample trở lại `Samples~/Demo` (`package.json` cập nhật theo): import qua **Package Manager › MJGame Text › Samples › Demo**, project cài package không còn tự biên dịch script sample.
 - Hiệu năng: `TextCounter` không còn `Update()` riêng. Chỉ counter đang đếm mới được runner chung cập nhật, counter đứng yên không tốn gì.
 - Hiệu năng: thêm/bớt text trong vòng update giờ là O(1) (trước đây là `List.Contains`/`Remove`, O(n)).
 - Hiệu năng: `TextExtrude` nghe đổi text qua `TextChangeDispatcher`, không còn đăng ký event toàn cục cho mỗi instance.

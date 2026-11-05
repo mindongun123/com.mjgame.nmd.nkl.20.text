@@ -22,7 +22,7 @@
     {
       "displayName": "Demo",
       "description": "One scene with five tabs: effects, layouts, a 100-item shop, extras (built-in tags, dialogue with sound and fade out, number formatting, runtime settings) and world (3D) texts. Needs TMP Essential Resources.",
-      "path": "Samples/Demo"
+      "path": "Samples~/Demo"
     }
   ]
 }
