@@ -25,7 +25,7 @@ namespace com.mjgame.nmd.nkl
     [DisallowMultipleComponent]
     [ExecuteAlways]
     [AddComponentMenu("com.mjgame.nmd.nkl/Text/Text FX")]
-    public sealed class TextFX : MonoBehaviour, ITextPreprocessor
+    public sealed class TextFX : MonoBehaviour, ITextPreprocessor, ITextChangeListener
     {
         /// <summary>Excludes its content from effects: &lt;nofx&gt; (all) or &lt;nofx=gradient,wave&gt;.</summary>
         public const string NoFxTag = "nofx";
@@ -43,6 +43,7 @@ namespace com.mjgame.nmd.nkl
         bool _sourceDirty = true;
         bool _modified;
         bool _ticking;
+        [NonSerialized] internal int RunnerIndex = -1; // position in TextFXRunner's list, -1 = not in it
         int _textVersion;
         TMP_VertexDataUpdateFlags _uploaded; // channels changed by the last tick: must be uploaded again to restore
 
@@ -158,6 +159,13 @@ namespace com.mjgame.nmd.nkl
             _effects.Insert(i, effect);
         }
 
+        /// <summary>Text set without preprocessing (char array without tags): no package tags remain.</summary>
+        internal void ClearSpans()
+        {
+            _spans.Clear();
+            _openSpans.Clear();
+        }
+
         internal void Unregister(TextEffect effect) => _effects.Remove(effect);
 
         /// <summary>True if an effect added by hand (not from <see cref="TextFXPresets"/>) uses this tag.</summary>
@@ -270,6 +278,8 @@ namespace com.mjgame.nmd.nkl
                 follower.Text.UpdateVertexData(TMP_VertexDataUpdateFlags.Vertices | TMP_VertexDataUpdateFlags.Colors32);
             }
         }
+
+        void ITextChangeListener.OnTextChanged(Object obj) => OnTextChanged(obj);
 
         /// <summary>Called by <see cref="TextChangeDispatcher"/> for this text and its followers only.</summary>
         internal void OnTextChanged(Object obj)

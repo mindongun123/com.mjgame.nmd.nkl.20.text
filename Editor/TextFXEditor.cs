@@ -73,7 +73,7 @@ namespace com.mjgame.nmd.nkl.editor
         {
             ("Motion", new[] { ("Wave", typeof(WaveEffect)), ("Shake", typeof(ShakeEffect)), ("Pulse", typeof(PulseEffect)), ("Wobble", typeof(WobbleEffect)) }),
             ("Color", new[] { ("Gradient", typeof(GradientEffect)), ("Rainbow", typeof(RainbowEffect)), ("Flash", typeof(ColorFlashEffect)), ("Shine", typeof(ShineEffect)) }),
-            ("Appear", new[] { ("Bounce In", typeof(BounceInEffect)), ("Fade In", typeof(FadeInEffect)), ("Typewriter", typeof(TypewriterEffect)) }),
+            ("Appear", new[] { ("Bounce In", typeof(BounceInEffect)), ("Fade In", typeof(FadeInEffect)), ("Typewriter", typeof(TypewriterEffect)), ("Fade Out", typeof(FadeOutEffect)) }),
             ("Layout", new[] { ("Arc", typeof(ArcLayout)), ("Curve", typeof(CurveLayout)), ("Line", typeof(LineLayout)) }),
         };
 

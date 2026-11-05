@@ -491,13 +491,14 @@ namespace com.mjgame.nmd.nkl.tests
             counter.prefix = "$ ";
             counter.SetValue(1234567);
             text.ForceMeshUpdate();
-            Assert.AreEqual("$ 1,234,567", text.GetParsedText());
+            Assert.AreEqual("$ 1234567", text.GetParsedText(), "Number is never grouped");
 
             counter.display = TextCounter.Display.Abbreviated;
             counter.abbreviateFrom = 1000;
+            counter.separator = ",";
             counter.SetValue(15300);
             text.ForceMeshUpdate();
-            Assert.AreEqual("$ 15.3k", text.GetParsedText());
+            Assert.AreEqual("$ 15,3k", text.GetParsedText());
 
             counter.display = TextCounter.Display.Time;
             counter.prefix = "";
@@ -525,6 +526,186 @@ namespace com.mjgame.nmd.nkl.tests
             text.SetFraction(3, 10, "Lv ");
             text.ForceMeshUpdate();
             Assert.AreEqual("Lv 3/10", text.GetParsedText());
+        }
+
+        [Test]
+        public void Counter_DecimalSeparator()
+        {
+            TextMeshProUGUI text = CreateText("");
+            var counter = text.gameObject.AddComponent<TextCounter>();
+            counter.display = TextCounter.Display.Abbreviated;
+            counter.prefix = "$ ";
+
+            // One setting: in Abbreviated the separator is the only mark (decimals), no grouping.
+            counter.separator = ",";
+            counter.SetValue(20500);
+            Assert.AreEqual("$ 20,5k", text.text);
+            counter.SetValue(9999);
+            Assert.AreEqual("$ 9999", text.text);
+            counter.SetValue(1000);
+            Assert.AreEqual("$ 1000", text.text);
+            counter.abbreviateFrom = 1000000;
+            counter.SetValue(250000);
+            Assert.AreEqual("$ 250000", text.text, "no grouping in Abbreviated");
+            counter.abbreviateFrom = 10000;
+
+            // The cases asked for: separator ',', abbreviate from 1000, 3 decimals for small values.
+            counter.prefix = "$";
+            counter.abbreviateFrom = 1000;
+            counter.decimals = 3;
+            counter.SetValue(0.199);
+            Assert.AreEqual("$0,199", text.text);
+            counter.prefix = "";
+            counter.suffix = "$";
+            counter.SetValue(199);
+            Assert.AreEqual("199$", text.text);
+            counter.suffix = "";
+            counter.SetValue(1999.29292);
+            Assert.AreEqual("1,999k", text.text, "one Decimals setting for both forms");
+            counter.SetValue(2.5);
+            Assert.AreEqual("2,5", text.text, "trailing zeros dropped");
+            counter.SetValue(-0.05);
+            Assert.AreEqual("-0,05", text.text);
+            counter.SetValue(58.77);
+            Assert.AreEqual("58,77", text.text);
+            counter.decimals = 1;
+            counter.SetValue(1999.29292);
+            Assert.AreEqual("1,9k", text.text);
+            counter.SetValue(58.77);
+            Assert.AreEqual("58,7", text.text, "truncated, not rounded");
+            counter.prefix = "$ ";
+            counter.abbreviateFrom = 10000;
+
+            counter.separator = ".";
+            counter.SetValue(20500);
+            Assert.AreEqual("$ 20.5k", text.text);
+
+            counter.separator = ",";
+            counter.display = TextCounter.Display.Number;
+            counter.SetValue(1000);
+            Assert.AreEqual("$ 1000", text.text, "Number: full value, no grouping");
+            counter.SetValue(1058.6);
+            Assert.AreEqual("$ 1058,6", text.text, "Number: separator is the decimal mark");
+            counter.SetValue(19999999999);
+            Assert.AreEqual("$ 19999999999", text.text);
+            counter.separator = ".";
+            counter.SetValue(1058.6);
+            Assert.AreEqual("$ 1058.6", text.text);
+            counter.separator = ",";
+            counter.display = TextCounter.Display.Abbreviated;
+            counter.SetValue(20000);
+            Assert.AreEqual("$ 20k", text.text);
+
+            text.SetDecimal(3.14159, 2, null, null, ',');
+            Assert.AreEqual("3,14", text.text);
+            text.SetPercent(0.756, 1, null, null, ',');
+            Assert.AreEqual("75,6%", text.text);
+            text.SetAbbreviated(1.5e21, 1, 1000, null, null, '.', ',');
+            Assert.AreEqual("1,5Sx", text.text);
+        }
+
+        [Test]
+        public void Counter_CountsWithThePrecisionOfItsEnds()
+        {
+            TextMeshProUGUI text = CreateText("");
+            var counter = text.gameObject.AddComponent<TextCounter>();
+            counter.separator = ",";
+            counter.decimals = 2;
+            var step = typeof(TextCounter).GetMethod("Step",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            counter.SetValue(50800);
+            counter.Add(20000);
+            for (int i = 0; i < 20; i++)
+            {
+                step.Invoke(counter, new object[] { 0.013f });
+                StringAssert.DoesNotContain(",", text.text, "whole numbers count in whole numbers: " + text.text);
+            }
+
+            counter.SetValue(0.5);
+            counter.CountTo(2.75);
+            for (int i = 0; i < 20; i++)
+            {
+                step.Invoke(counter, new object[] { 0.013f });
+                int comma = text.text.IndexOf(',');
+                Assert.IsTrue(comma < 0 || text.text.Length - comma - 1 <= 2, "at most 2 decimals: " + text.text);
+            }
+            counter.Complete();
+            Assert.AreEqual("2,75", text.text);
+        }
+
+        [Test]
+        public void Extensions_StripPackageTags()
+        {
+            TextMeshProUGUI text = CreateText("");
+            SetTag(text.gameObject.AddComponent<WaveEffect>(), "wave");
+            var fx = text.GetComponent<TextFX>();
+
+            text.SetNumber(1500, "<wave>", "</wave> coins");
+            text.ForceMeshUpdate();
+            Assert.AreEqual("1,500 coins", text.GetParsedText());
+            Assert.AreEqual(1, fx.Spans.Count);
+
+            // Without tags the old spans must not stay.
+            text.SetNumber(7);
+            text.ForceMeshUpdate();
+            Assert.AreEqual("7", text.GetParsedText());
+            Assert.AreEqual(0, fx.Spans.Count);
+        }
+
+        [Test]
+        public void Runner_AddRemove_KeepsIndices()
+        {
+            int before = TextFXRunner.ActiveCount;
+            var fxs = new TextFX[4];
+            for (int i = 0; i < fxs.Length; i++)
+            {
+                TextMeshProUGUI text = CreateText("T" + i);
+                text.gameObject.AddComponent<WaveEffect>();
+                fxs[i] = text.GetComponent<TextFX>();
+                fxs[i].PlayAll();
+            }
+            Assert.AreEqual(before + 4, TextFXRunner.ActiveCount);
+
+            // Remove from the middle, then the rest: every one must leave the loop.
+            fxs[1].StopAll();
+            fxs[1].Tick(0f);
+            Assert.AreEqual(before + 3, TextFXRunner.ActiveCount);
+            for (int i = 0; i < fxs.Length; i++)
+            {
+                fxs[i].StopAll();
+                fxs[i].Tick(0f);
+                Assert.IsFalse(fxs[i].IsInUpdateLoop);
+            }
+            Assert.AreEqual(before, TextFXRunner.ActiveCount);
+        }
+
+        [Test]
+        public void Extrude_World_ScalesOffsetAndSitsBehind()
+        {
+            var go = new GameObject("World");
+            var world = go.AddComponent<TextMeshPro>();
+            world.text = "Hi";
+            var extrude = go.AddComponent<TextExtrude>();
+            extrude.offset = new Vector2(0f, -10f);
+            var layerGo = new GameObject("Layer");
+            var layer = layerGo.AddComponent<TextMeshPro>();
+            var so = new SerializedObject(extrude);
+            so.FindProperty("_layer").objectReferenceValue = layer;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            try
+            {
+                extrude.Sync();
+                float scale = TextFXSettings.Instance.worldUnitScale;
+                Assert.AreEqual(-10f * scale, layer.transform.localPosition.y, 1e-4f);
+                Assert.Greater(layer.transform.localPosition.z, 0f);
+                Assert.Less(layer.sortingOrder, world.sortingOrder);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(layerGo);
+            }
         }
 
         static float VertexY(TMP_Text text, int charIndex) =>
@@ -747,6 +928,107 @@ namespace com.mjgame.nmd.nkl.tests
             Assert.IsFalse(fade.IsPlaying);
             fx.Tick(0f);
             Assert.AreEqual(255, VertexColor(text, 3, 0).a);
+        }
+
+        [Test]
+        public void FadeOut_HidesAndStaysHidden_OutOfUpdateLoop()
+        {
+            TextMeshProUGUI text = CreateText("Bye");
+            var fade = text.gameObject.AddComponent<FadeOutEffect>();
+            Assert.IsFalse(fade.PlayOnEnable, "must not hide the text as soon as it is enabled");
+            Assert.IsFalse(fade.IsPlaying);
+            fade.charDelay = 0.1f;
+            fade.charDuration = 0.2f;
+            int completed = 0;
+            fade.onComplete.AddListener(() => completed++);
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+
+            fade.Play();
+            fx.Tick(0f);
+            Assert.AreEqual(255, VertexColor(text, 2, 0).a);
+
+            fx.Tick(0.25f);
+            Assert.AreEqual(0, VertexColor(text, 0, 0).a, "first character gone");
+            Assert.Greater(VertexColor(text, 2, 0).a, 0, "last character still fading");
+
+            fx.Tick(1f);
+            Assert.IsTrue(fade.IsHidden);
+            Assert.AreEqual(1, completed);
+            Assert.AreEqual(0, VertexColor(text, 2, 0).a);
+            Assert.IsFalse(fx.IsInUpdateLoop, "hidden text costs nothing per frame");
+            Assert.IsTrue(fx.IsAwake);
+
+            // A rebuild keeps it hidden; Stop shows it again.
+            text.text = "Bye!";
+            text.ForceMeshUpdate();
+            Assert.AreEqual(0, VertexColor(text, 3, 0).a);
+            Assert.AreEqual(1, completed);
+
+            fade.Stop();
+            fx.Tick(0f);
+            Assert.AreEqual(255, VertexColor(text, 0, 0).a);
+        }
+
+        [Test]
+        public void FadeOut_Backward_StartsAtTheEnd_AndHideNow()
+        {
+            TextMeshProUGUI text = CreateText("Bye");
+            var fade = text.gameObject.AddComponent<FadeOutEffect>();
+            fade.order = FadeOutEffect.Order.Backward;
+            fade.charDelay = 0.1f;
+            fade.charDuration = 0.2f;
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+
+            fade.Play();
+            fx.Tick(0f);
+            fx.Tick(0.2f); // last character: 0..0.2 s, first: from 0.2 s
+            Assert.AreEqual(0, VertexColor(text, 2, 0).a, "last character gone first");
+            Assert.AreEqual(255, VertexColor(text, 0, 0).a);
+
+            fade.Stop();
+            fx.Tick(0f);
+            fade.HideNow();
+            fx.Tick(0f);
+            Assert.AreEqual(0, VertexColor(text, 0, 0).a);
+            Assert.IsTrue(fade.IsHidden);
+        }
+
+        [Test]
+        public void FadeOut_DeactivatingOnComplete_IsSafe()
+        {
+            TextMeshProUGUI text = CreateText("Bye");
+            var fade = text.gameObject.AddComponent<FadeOutEffect>();
+            fade.charDuration = 0.1f;
+            fade.onComplete.AddListener(() => text.gameObject.SetActive(false));
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+
+            fade.Play();
+            fx.Tick(0f);
+            Assert.DoesNotThrow(() => fx.Tick(1f));
+            Assert.IsFalse(text.gameObject.activeSelf);
+            Assert.IsFalse(fx.IsInUpdateLoop);
+        }
+
+        [Test]
+        public void TypewriterSound_ListensWithoutErrors()
+        {
+            TextMeshProUGUI text = CreateText("Hello world");
+            var typer = text.gameObject.AddComponent<TypewriterEffect>();
+            var sound = text.gameObject.AddComponent<TypewriterSound>();
+            sound.clips = new[] { AudioClip.Create("tick", 441, 1, 44100, false) };
+            var fx = text.GetComponent<TextFX>();
+            text.ForceMeshUpdate();
+
+            typer.Play();
+            fx.Tick(0f);
+            fx.Tick(0.1f);
+            typer.Skip();
+            Assert.DoesNotThrow(() => fx.Tick(0f));
+            Assert.IsTrue(typer.IsComplete || typer.IsPlaying);
+            Object.DestroyImmediate(sound.clips[0]);
         }
 
         [Test]

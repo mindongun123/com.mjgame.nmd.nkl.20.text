@@ -5,6 +5,25 @@ Mọi thay đổi đáng chú ý của package được ghi ở đây.
 
 ## [Unreleased]
 
+### Added
+- Dấu thập phân: tham số `decimalPoint` cho `WriteAbbreviated`/`WriteDecimal`/`WritePercent` và `SetAbbreviated`/`SetDecimal`/`SetPercent` (mặc định `.`); `TextFormat.WriteTrimmed`: số lẻ tối đa N chữ số, cắt xuống, bỏ số 0 ở cuối (`0.199`, `2.5`, `199`).
+- `TextCounter` nhận số lẻ: giá trị là `double` (`SetValue(0.199)`, `Add(0.05f)`), một ô **Decimals** dùng chung cho số ghi đầy đủ (`58,77`) và số rút gọn (`1,9k`), thay cho `abbreviateDecimals` (giá trị cũ được tự chuyển sang; thuộc tính `abbreviateDecimals` vẫn dùng được nhưng đã đánh dấu Obsolete). Chỉ còn một ô `separator`: ở Abbreviated là dấu duy nhất, dùng làm dấu thập phân, không phân cách hàng nghìn (`,` → `$0,199`, `199$`, `1,9k`); ở Number cũng vậy: ghi đầy đủ, không chia nhóm hàng nghìn (`1058,6`, `19999999999`). Giá trị cũ trong scene/prefab được giữ nguyên. **Thay đổi hành vi**: với `separator` mặc định `,`, Abbreviated ra `15,3k` thay vì `15.3k` (đặt `.` để giữ kiểu cũ); `Value`/`Target` giờ là `double`.
+- `FadeOutEffect`: chữ biến mất lần lượt (từ đầu, từ cuối hoặc cùng lúc), có trượt và thu nhỏ. Ẩn xong vẫn giữ ẩn mà không nằm trong vòng update; `Stop()` hiện lại, `HideNow()` ẩn ngay, có `onComplete`. Play On Enable mặc định tắt. Nút **Fade Out** trong inspector `TextFX`.
+- `TypewriterSound`: âm thanh cho typewriter, có clip và pitch ngẫu nhiên, mỗi N chữ, khoảng cách tối thiểu, bỏ qua khoảng trắng/dấu câu, im khi `Skip()`, `Muted` toàn cục.
+- Sample có thêm tab **Extras** (tag dựng sẵn, Shine, hội thoại có âm thanh và Fade Out, mọi hàm định dạng, setting runtime) và tab **World** (text 3D: extrude, layout, số sát thương dùng pool, culling, timeScale). Mọi tính năng của package giờ đều có trong sample.
+- `TextEffect.DefaultPlayOnEnable`: effect con chọn giá trị Play On Enable ban đầu cho component mới.
+
+### Fixed
+- Sample: nút Replay của tab Effects có một listener trỏ tới object đã mất; đã xoá.
+- `SetNumber`/`SetTime`/... và `TextCounter` giờ gỡ được tag của package (`<wave>`) trong prefix/suffix. TMP 3.0 không chạy preprocessor khi gán text bằng `char[]`, nên trước đây tag hiện nguyên ra chữ và vùng effect vẫn dùng của text cũ. Text không có tag vẫn không tạo GC; có tag thì tạo một string mỗi lần gán.
+- `TextExtrude` trên text 3D: `offset` nhân với hệ số World (trước đây lệch 9 đơn vị), lớp extrude lùi ra sau theo Z (`worldDepth`) và có `sortingOrder` nhỏ hơn chữ chính. Trước đây nhánh xử lý text 3D không bao giờ chạy, vì `TextMeshPro` cũng có `RectTransform`.
+
+### Changed
+- Sample chuyển từ `Samples~/Demo` về `Samples/Demo` (`package.json` cập nhật theo), nên script sample được biên dịch cả trong project cài package.
+- Hiệu năng: `TextCounter` không còn `Update()` riêng. Chỉ counter đang đếm mới được runner chung cập nhật, counter đứng yên không tốn gì.
+- Hiệu năng: thêm/bớt text trong vòng update giờ là O(1) (trước đây là `List.Contains`/`Remove`, O(n)).
+- Hiệu năng: `TextExtrude` nghe đổi text qua `TextChangeDispatcher`, không còn đăng ký event toàn cục cho mỗi instance.
+
 ## [0.7.0] - 2026-11-05
 
 ### Added

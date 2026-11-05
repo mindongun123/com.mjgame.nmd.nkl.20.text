@@ -346,6 +346,34 @@ Chữ chưa gõ được ẩn bằng alpha của vertex, nên layout không nh�
 
 ---
 
+### Âm thanh khi gõ: `TypewriterSound`
+Gắn **Add Component › com.mjgame.nmd.nkl › Text › Typewriter Sound** cạnh `TypewriterEffect`, rồi kéo một hoặc nhiều clip vào `clips`.
+
+| Field | Mặc định | Ý nghĩa |
+|---|---|---|
+| `clips` | | Mỗi lần chọn ngẫu nhiên một clip; có từ 2 clip trở lên thì không lặp lại clip vừa phát |
+| `pitchRange` | 0.95–1.05 | Pitch ngẫu nhiên cho mỗi tiếng, để không nghe như tiếng súng máy |
+| `everyNthCharacter` | 1 | 2 = cứ hai chữ mới kêu một lần |
+| `minInterval` | 0.04 s | Khoảng cách tối thiểu giữa hai tiếng khi chữ chạy nhanh |
+| `skipSpaces` / `skipPunctuation` | bật / tắt | Không kêu ở khoảng trắng / dấu câu |
+| `muteOnSkip` | bật | `Skip()` hiện hết chữ mà không phát tiếng |
+
+`source` để trống thì dùng `AudioSource` trên object (thiếu thì tự thêm). Tắt toàn cục theo setting âm thanh của game: `TypewriterSound.Muted = true`. Không tạo GC mỗi chữ.
+
+### Biến mất: `FadeOutEffect`
+```csharp
+var fadeOut = GetComponent<FadeOutEffect>();
+fadeOut.onComplete.AddListener(() => panel.SetActive(false));
+fadeOut.Play();      // chữ biến mất lần lượt
+fadeOut.HideNow();   // ẩn ngay, không animation
+fadeOut.Stop();      // hiện lại
+```
+- `order`: `Forward` (từ đầu), `Backward` (từ cuối, như xoá chữ), `AllAtOnce`.
+- `slide`, `endScale`: trượt và thu nhỏ khi mờ đi (theo `MotionScale`).
+- **Play On Enable mặc định tắt**, để chữ không biến mất ngay khi bật. Không chạy preview trong Edit mode.
+- Ẩn xong thì chữ vẫn ẩn nhưng **rời vòng update**, không tốn gì mỗi frame; text đổi nội dung thì vẫn ẩn. Dùng `IsHidden` để kiểm tra.
+- Có nút **Fade Out** trong nhóm Appear của inspector `TextFX`.
+
 ## TextCounter
 
 ```csharp
@@ -514,7 +542,7 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 - Tag point của typewriter (`<p>`, `<speed>`, `<ev>`) chỉ được gỡ khi text có `TypewriterEffect`.
 - Follower (lớp extrude) phải cùng nội dung và layout với text chính; `TextExtrude` tự lo việc này.
 - Preview trong Edit mode không lưu vào scene. Thoát preview hoặc reload script thì text trở về bình thường.
-- `TMPTextExtensions` dùng buffer tĩnh: chỉ gọi trên main thread (giống TMP).
+- `TMPTextExtensions` dùng buffer tĩnh: chỉ gọi trên main thread (giống TMP). Prefix/suffix có tag của package (`<wave>`) trên text có `TextFX` thì mỗi lần gán tạo một string, vì TMP chỉ chạy preprocessor cho string; không có tag thì không tạo GC.
 - Text rất dài với effect lặp vẫn tốn CPU theo số ký tự.
 - Mọi text không phải `TextMeshProUGUI` đều được coi là text 3D (hệ số và timeScale của World).
 - Text đang khuất chỉ được bỏ qua khi nó chỉ chạy effect lặp (xem `CullHiddenTexts`). Effect chạy một lần vẫn chạy cho xong; text nằm dưới `Mask` (stencil) không được coi là khuất. Nên dừng effect khi object trả về pool.
@@ -524,17 +552,19 @@ Trước mỗi lần `Apply`, vertex đã được trả về trạng thái gố
 ---
 
 ## Sample
-Sample không nằm sẵn trong project: mở **Window › Package Manager**, chọn **MJGame Text**, tab **Samples**, bấm **Import** ở mục **Demo**. Unity chép sample vào `Assets/Samples/MJGame Text/<version>/Demo/`. Trong repo package, sample nằm ở `Samples~/Demo` (thư mục có `~` được Unity bỏ qua, nên không biên dịch vào project dùng package).
+Sample không nằm sẵn trong project: mở **Window › Package Manager**, chọn **MJGame Text**, tab **Samples**, bấm **Import** ở mục **Demo**. Unity chép sample vào `Assets/Samples/MJGame Text/<version>/Demo/`. Trong repo package, sample nằm ở `Samples/Demo`, nên Unity cũng biên dịch script sample (assembly `com.mjgame.nmd.nkl.20.Sample`) trong project cài package.
 
 | Scene | Nội dung |
 |---|---|
-| `sample.unity` | Một scene, ba tab ở cạnh dưới: **Effects**, **Layout** và **Shop** |
+| `sample.unity` | Một scene, năm tab ở cạnh dưới: **Effects**, **Layout**, **Shop**, **Extras** và **World** |
 | Tab Effects | Mọi effect, tag, typewriter, counter, extrude; nút Replay / Skip / +1234 |
 | Tab Layout | `ArcLayout` cong lên, cong xuống, vòng tròn 360°, nhiều dòng, kết hợp `<gold>`/`<wave>`; `CurveLayout` kiểu WordArt; Size Curve: phình giữa, vừa cong vừa phình, to dần trên đường nghiêng |
+| Tab Extras | Tag dựng sẵn không cần component (`<pulse>`, `<flash>`, `<bounce>`, `<fade>`, `<shine>`, `<nofx=wave>`), `ShineEffect`; hội thoại có `TypewriterEffect` + `<ev=...>` + `TypewriterSound` (âm thanh tạo bằng code, không cần file) + `FadeOutEffect` (nút Close); mọi hàm định dạng (`SetNumber`, `SetAbbreviated` long/double, `SetDecimal`, `SetPercent`, `SetFraction`, `SetTime` Auto/Compact + `TimeLabels` tiếng Việt); nút Reduce motion (`SetPlayerMotionScale`) và Update rate (sửa một bản copy của settings, không đụng asset) |
+| Tab World | Text 3D (`TextMeshPro` trên object): bảng tên `TextExtrude` + Wave + `<gold>`, biển xoay `ArcLayout` 360° + Rainbow, số sát thương dùng pool (`BounceIn` → `FadeOut`, `ResetAll`, crit dùng `<shake>` trong prefix của `SetNumber`), vật bay ra khỏi camera để minh hoạ culling; nút Pause đặt `Time.timeScale = 0`: text 3D dừng, text UI vẫn chạy |
 | Tab Shop | Shop 100 item: giá rút gọn, mua hàng (rung khi thiếu tiền, nảy khi mua được), huy hiệu HOT trong sub-Canvas, coin đếm có animation, đồng hồ sale, nút Open |
 
 Tab bị ẩn thì tắt hẳn, nên text của nó rời vòng update. `SampleTabs` gọi `TextFXPresets.Prewarm()` khi scene mở. Shop chỉ tạo 100 item lần đầu mở tab Shop.
 
-`Gradients/` chứa 5 `TextGradient` mẫu (Fire, Ice, Gold, Rainbow, Toxic). Script sample nằm ở `Scripts/` (assembly `com.mjgame.nmd.nkl.20.Sample`).
+`Gradients/` chứa 5 `TextGradient` mẫu (Fire, Ice, Gold, Rainbow, Toxic). Script sample (`SampleTabs`, `ShopSample`, `ExtrasSample`, `WorldSample`) nằm ở `Scripts/` (assembly `com.mjgame.nmd.nkl.20.Sample`).
 
 > Sample chỉ dùng font trong `Runtime/Font` của package và UI mặc định của Unity, không phụ thuộc asset nào khác của project. Cần import TMP Essential Resources như mọi project dùng TextMeshPro.

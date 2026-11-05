@@ -79,9 +79,11 @@ namespace com.mjgame.nmd.nkl
         /// <see cref="WriteNumber"/>. Decimals are truncated (never shows more than the real value)
         /// and trailing zeros are dropped; three-digit wholes ("150k") get no decimals.
         /// Exact for every long (up to "9.2Qi"); use the double overload for idle-game sized values.
+        /// <paramref name="separator"/> groups thousands (only below <paramref name="from"/>);
+        /// <paramref name="decimalPoint"/> is the decimal mark: ',' gives "20,5k" (Vietnamese/European style).
         /// </summary>
         public static int WriteAbbreviated(char[] buffer, int index, long value, int decimals = 1,
-            long from = 1000, char separator = ',')
+            long from = 1000, char separator = ',', char decimalPoint = '.')
         {
             ulong magnitude = Magnitude(value);
             if (magnitude < (ulong)Math.Max(1000, from)) return WriteNumber(buffer, index, value, separator);
@@ -98,7 +100,7 @@ namespace com.mjgame.nmd.nkl
             ulong whole = magnitude / divisor;
             // remainder / divisor < 1, so the double keeps enough precision for 3 digits.
             double fraction = (double)(magnitude % divisor) / divisor;
-            return WriteScaled(buffer, index, whole, fraction, decimals, unit);
+            return WriteScaled(buffer, index, whole, fraction, decimals, unit, decimalPoint);
         }
 
         /// <summary>
@@ -107,7 +109,7 @@ namespace com.mjgame.nmd.nkl
         /// NaN writes "0", infinity "∞". Precision is that of double (~15 significant digits).
         /// </summary>
         public static int WriteAbbreviated(char[] buffer, int index, double value, int decimals = 1,
-            double from = 1000, char separator = ',')
+            double from = 1000, char separator = ',', char decimalPoint = '.')
         {
             if (double.IsNaN(value)) value = 0;
             if (value < 0) buffer[index++] = '-';
@@ -139,10 +141,11 @@ namespace com.mjgame.nmd.nkl
             scaled += scaled * 1e-12;
             double whole = Math.Floor(scaled);
             ulong wholeDigits = whole >= ulong.MaxValue ? ulong.MaxValue : (ulong)whole;
-            return WriteScaled(buffer, index, wholeDigits, scaled - whole, decimals, unit);
+            return WriteScaled(buffer, index, wholeDigits, scaled - whole, decimals, unit, decimalPoint);
         }
 
-        static int WriteScaled(char[] buffer, int index, ulong whole, double fraction, int decimals, int unit)
+        static int WriteScaled(char[] buffer, int index, ulong whole, double fraction, int decimals, int unit,
+            char decimalPoint)
         {
             index = WriteDigits(buffer, index, whole, '\0');
 
@@ -158,7 +161,7 @@ namespace com.mjgame.nmd.nkl
                 }
                 if (decimals > 0)
                 {
-                    buffer[index++] = '.';
+                    buffer[index++] = decimalPoint;
                     index = WritePadded(buffer, index, digits, decimals);
                 }
             }
@@ -166,8 +169,9 @@ namespace com.mjgame.nmd.nkl
             return WriteString(buffer, index, Units[unit]);
         }
 
-        /// <summary>Fixed decimals, rounded half away from zero: 3.14159 → "3.14".</summary>
-        public static int WriteDecimal(char[] buffer, int index, double value, int decimals = 2, char separator = '\0')
+        /// <summary>Fixed decimals, rounded half away from zero: 3.14159 → "3.14" ("3,14" with decimalPoint ',').</summary>
+        public static int WriteDecimal(char[] buffer, int index, double value, int decimals = 2, char separator = '\0',
+            char decimalPoint = '.')
         {
             if (double.IsNaN(value) || double.IsInfinity(value)) value = 0;
             decimals = Math.Max(0, Math.Min(decimals, 9));
@@ -179,14 +183,45 @@ namespace com.mjgame.nmd.nkl
             if (value < 0 && units > 0) buffer[index++] = '-';
             index = WriteDigits(buffer, index, whole, separator);
             if (decimals == 0) return index;
-            buffer[index++] = '.';
+            buffer[index++] = decimalPoint;
             return WritePadded(buffer, index, units % Pow10[decimals], decimals);
         }
 
-        /// <summary>0.756 → "76%" (decimals 0), "75.6%" (decimals 1).</summary>
-        public static int WritePercent(char[] buffer, int index, double ratio, int decimals = 0)
+        /// <summary>
+        /// Up to <paramref name="maxDecimals"/> decimals, truncated (never shows more than the real value) and
+        /// without trailing zeros: 0.199 → "0.199", 199 → "199", 2.50 → "2.5" ("0,199" with decimalPoint ',').
+        /// <paramref name="separator"/> groups thousands of the whole part ('\0' = none).
+        /// </summary>
+        public static int WriteTrimmed(char[] buffer, int index, double value, int maxDecimals = 2,
+            char decimalPoint = '.', char separator = '\0')
         {
-            index = WriteDecimal(buffer, index, ratio * 100.0, decimals);
+            if (double.IsNaN(value) || double.IsInfinity(value)) value = 0;
+            maxDecimals = Math.Max(0, Math.Min(maxDecimals, 9));
+            double magnitude = Math.Abs(value);
+            // Tiny epsilon so 0.199 does not truncate to 0.198 because of binary rounding (0.19899...).
+            double scaled = Math.Floor(magnitude * Pow10[maxDecimals] * (1 + 1e-12));
+            if (scaled > long.MaxValue) scaled = long.MaxValue;
+            ulong units = (ulong)scaled;
+            ulong whole = units / Pow10[maxDecimals];
+            ulong digits = units % Pow10[maxDecimals];
+
+            if (value < 0 && units > 0) buffer[index++] = '-';
+            index = WriteDigits(buffer, index, whole, separator);
+            int decimals = maxDecimals;
+            while (decimals > 0 && digits % 10 == 0)
+            {
+                digits /= 10;
+                decimals--;
+            }
+            if (decimals == 0) return index;
+            buffer[index++] = decimalPoint;
+            return WritePadded(buffer, index, digits, decimals);
+        }
+
+        /// <summary>0.756 → "76%" (decimals 0), "75.6%" (decimals 1).</summary>
+        public static int WritePercent(char[] buffer, int index, double ratio, int decimals = 0, char decimalPoint = '.')
+        {
+            index = WriteDecimal(buffer, index, ratio * 100.0, decimals, '\0', decimalPoint);
             buffer[index++] = '%';
             return index;
         }

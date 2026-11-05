@@ -6,13 +6,19 @@ namespace com.mjgame.nmd.nkl
 {
     /// <summary>
     /// Single listener on TMP's global TEXT_CHANGED event, routing each change only to the
-    /// <see cref="TextFX"/> that watch that text. Without it every awake TextFX would be called
+    /// listeners (<see cref="TextFX"/>, <see cref="TextExtrude"/>) that watch that text. Without it every awake TextFX would be called
     /// for every text change in the game.
     /// </summary>
+    /// <summary>Receives TMP text changes through <see cref="TextChangeDispatcher"/>.</summary>
+    internal interface ITextChangeListener
+    {
+        void OnTextChanged(Object obj);
+    }
+
     internal static class TextChangeDispatcher
     {
-        static readonly Dictionary<int, List<TextFX>> Watchers = new Dictionary<int, List<TextFX>>();
-        static readonly Stack<List<TextFX>> Pool = new Stack<List<TextFX>>();
+        static readonly Dictionary<int, List<ITextChangeListener>> Watchers = new Dictionary<int, List<ITextChangeListener>>();
+        static readonly Stack<List<ITextChangeListener>> Pool = new Stack<List<ITextChangeListener>>();
         static bool _subscribed;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -26,13 +32,13 @@ namespace com.mjgame.nmd.nkl
         /// <summary>Number of watched texts (for tests and diagnostics).</summary>
         internal static int WatchedCount => Watchers.Count;
 
-        internal static void Watch(Object text, TextFX fx)
+        internal static void Watch(Object text, ITextChangeListener fx)
         {
             if (text == null) return;
             int id = text.GetInstanceID();
-            if (!Watchers.TryGetValue(id, out List<TextFX> list))
+            if (!Watchers.TryGetValue(id, out List<ITextChangeListener> list))
             {
-                list = Pool.Count > 0 ? Pool.Pop() : new List<TextFX>(1);
+                list = Pool.Count > 0 ? Pool.Pop() : new List<ITextChangeListener>(1);
                 Watchers.Add(id, list);
             }
             if (!list.Contains(fx)) list.Add(fx);
@@ -42,11 +48,11 @@ namespace com.mjgame.nmd.nkl
             _subscribed = true;
         }
 
-        internal static void Unwatch(Object text, TextFX fx)
+        internal static void Unwatch(Object text, ITextChangeListener fx)
         {
             if (ReferenceEquals(text, null)) return;
             int id = text.GetInstanceID();
-            if (!Watchers.TryGetValue(id, out List<TextFX> list)) return;
+            if (!Watchers.TryGetValue(id, out List<ITextChangeListener> list)) return;
             list.Remove(fx);
             if (list.Count > 0) return;
 
@@ -59,7 +65,7 @@ namespace com.mjgame.nmd.nkl
 
         static void OnTextChanged(Object obj)
         {
-            if (obj == null || !Watchers.TryGetValue(obj.GetInstanceID(), out List<TextFX> list)) return;
+            if (obj == null || !Watchers.TryGetValue(obj.GetInstanceID(), out List<ITextChangeListener> list)) return;
             // Backwards: a TextFX may stop watching while handling the change.
             for (int i = list.Count - 1; i >= 0; i--)
             {

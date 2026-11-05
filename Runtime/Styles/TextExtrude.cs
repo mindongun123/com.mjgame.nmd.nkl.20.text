@@ -12,10 +12,13 @@ namespace com.mjgame.nmd.nkl
     [RequireComponent(typeof(TMP_Text))]
     [ExecuteAlways]
     [AddComponentMenu("com.mjgame.nmd.nkl/Text/Text Extrude")]
-    public sealed class TextExtrude : MonoBehaviour
+    public sealed class TextExtrude : MonoBehaviour, ITextChangeListener
     {
         [SerializeField] TMP_Text _layer;
+        [Tooltip("Offset of the layer, in UI units. World texts multiply it by the World distance scale of TextFXSettings.")]
         public Vector2 offset = new Vector2(0f, -9f);
+        [Tooltip("World texts only: how far behind the text the layer sits (local Z), so it never draws over the text.")]
+        public float worldDepth = 0.01f;
         public Color color = new Color(0.42f, 0.15f, 0.02f, 1f);
 
         TMP_Text _text;
@@ -26,14 +29,14 @@ namespace com.mjgame.nmd.nkl
 
         void OnEnable()
         {
-            TMPro_EventManager.TEXT_CHANGED_EVENT.Add(OnTextChanged);
+            TextChangeDispatcher.Watch(Text, this);
             Sync();
             LinkEffects();
         }
 
         void OnDisable()
         {
-            TMPro_EventManager.TEXT_CHANGED_EVENT.Remove(OnTextChanged);
+            TextChangeDispatcher.Unwatch(Text, this);
             if (_layer != null && TryGetComponent(out TextFX fx)) fx.RemoveFollower(_layer);
         }
 
@@ -42,7 +45,7 @@ namespace com.mjgame.nmd.nkl
             if (_layer != null && TryGetComponent(out TextFX fx)) fx.AddFollower(_layer);
         }
 
-        void OnTextChanged(Object obj)
+        void ITextChangeListener.OnTextChanged(Object obj)
         {
             if (obj == Text) Sync();
         }
@@ -96,15 +99,28 @@ namespace com.mjgame.nmd.nkl
             if (_layer == null) return;
             if (transform is RectTransform src && _layer.transform is RectTransform dst)
             {
+                // TextMeshPro (world) has a RectTransform too: copy the frame for both kinds.
                 dst.anchorMin = src.anchorMin;
                 dst.anchorMax = src.anchorMax;
                 dst.pivot = src.pivot;
                 dst.sizeDelta = src.sizeDelta;
-                dst.anchoredPosition = src.anchoredPosition + offset;
+            }
+
+            if (!TextFXSettings.IsWorld(Text))
+            {
+                ((RectTransform)_layer.transform).anchoredPosition = ((RectTransform)transform).anchoredPosition + offset;
             }
             else
             {
-                _layer.transform.localPosition = transform.localPosition + (Vector3)offset;
+                // World text: distances follow the World scale like the effects do, and the layer is pushed
+                // back in Z and drawn first: sibling order does not decide draw order for 3D meshes.
+                Vector3 shift = (Vector3)(offset * TextFXSettings.Instance.UnitScale(Text)) + new Vector3(0f, 0f, worldDepth);
+                _layer.transform.localPosition = transform.localPosition + transform.localRotation * Vector3.Scale(shift, transform.localScale);
+                if (Text is TextMeshPro world && _layer is TextMeshPro layer)
+                {
+                    layer.sortingLayerID = world.sortingLayerID;
+                    layer.sortingOrder = world.sortingOrder - 1;
+                }
             }
             _layer.transform.localRotation = transform.localRotation;
             _layer.transform.localScale = transform.localScale;

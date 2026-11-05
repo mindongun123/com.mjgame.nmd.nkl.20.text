@@ -27,6 +27,15 @@ namespace com.mjgame.nmd.nkl
         int _textVersion = -1;
         int _affectedCount;
 
+        /// <summary>
+        /// Starting value of Play On Enable for new components (inspector or AddComponent). False for
+        /// effects that should only run when asked, e.g. <see cref="FadeOutEffect"/> would hide the text at once.
+        /// </summary>
+        protected virtual bool DefaultPlayOnEnable => true;
+
+        // Serialized values overwrite this after construction, so it only affects new components.
+        protected TextEffect() => _playOnEnable = DefaultPlayOnEnable;
+
         public string TagName => _tag;
         public bool PlayOnEnable => _playOnEnable;
 
